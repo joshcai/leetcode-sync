@@ -1,6 +1,9 @@
 name: 'LeetCode Sync'
 description: 'Sync LeetCode submissions to GitHub'
 inputs:
+  github-token:
+    description: 'The GitHub token'
+    required: true
   leetcode-csrf-token:
     description: 'The LeetCode CSRF token'
     required: true

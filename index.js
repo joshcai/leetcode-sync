@@ -178,14 +178,14 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
 }
 
 async function main() {
-  const githubToken = process.env.GITHUB_TOKEN;
+  const githubToken = core.getInput('github-token');
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const leetcodeCSRFToken = core.getInput('leetcode-csrf-token');
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
 
-  sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
+  await sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
 }
 
 main().catch(error => core.setFailed(error));
