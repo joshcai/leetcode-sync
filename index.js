@@ -52,18 +52,22 @@ async function commit(octokit, owner, repo, commitInfo, treeSHA, latestCommitSHA
     tree: treeData,
   })
 
+  const date = new Date(submission.timestamp * 1000).toISOString();
   const commitResponse = await octokit.git.createCommit({
     owner: owner,
     repo: repo,
     message: `${COMMIT_MESSAGE} - ${submission.title} (${submission.lang})`,
     tree: treeResponse.data.sha,
     parents: [latestCommitSHA],
+    author: {
+      email: commitInfo.email,
+      name: commitInfo.name,
+      date: date,
+    },
     committer: {
       email: commitInfo.email,
       name: commitInfo.name,
-      email: '',
-      name: '',
-      date: new Date(submission.timestamp * 1000).toISOString(),
+      date: date,
     },
   })
 
@@ -117,10 +121,15 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   });
 
   let lastTimestamp = 0;
+  // commitInfo is used to get the original name / email to use for the author / committer. 
+  // Since we need to modify the commit time, we can't use the default settings for the
+  // authenticated user.
+  let commitInfo = commits.data[commits.data.length-1].commit.author;
   for (const commit of commits.data) {
     if (!commit.commit.message.startsWith(COMMIT_MESSAGE)) {
       continue
     }
+    commitInfo = commit.commit.author;
     lastTimestamp = Date.parse(commit.commit.committer.date) / 1000;
     break;
   }
@@ -159,7 +168,6 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   // Write in reverse order (oldest first), so that if there's errors, the last sync time
   // is still valid.
   console.log(`Syncing ${submissions.length} submissions...`);
-  const commitInfo = commits.data[commits.data.length-1].commit.committer;
   let latestCommitSHA = commits.data[0].sha;
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
@@ -178,4 +186,5 @@ async function main() {
 
   sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
 }
+
 main().catch(error => core.setFailed(error));
