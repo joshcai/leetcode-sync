@@ -1,0 +1,16 @@
+name: 'LeetCode Sync'
+description: 'Sync LeetCode submissions to GitHub'
+inputs:
+  leetcode-csrf-token:
+    description: 'The LeetCode CSRF token'
+    required: true
+  leetcode-session:
+    description: 'The LeetCode session value'
+    required: true
+  filter-duplicate-secs:
+    description: 'Number of seconds after an accepted solution to ignore other accepted solutions for the same problem'
+    required: false
+    default: 86400
+runs:
+  using: 'node12'
+  main: 'index.js'
