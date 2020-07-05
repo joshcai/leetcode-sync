@@ -1,6 +1,6 @@
 const axios = require('axios');
 const core = require('@actions/core');
-const github = require('@actions/github');
+const { context } = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
 
 const COMMIT_MESSAGE = 'Sync LeetCode submission';
@@ -178,8 +178,9 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
 }
 
 async function main() {
-  const githubToken = github.token;
-  const [owner, repo] = github.repository.split('/');
+  const githubToken = process.env.GITHUB_TOKEN;
+  const owner = context.repo.owner;
+  const repo = context.repo.repo;
   const leetcodeCSRFToken = core.getInput('leetcode-csrf-token');
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
