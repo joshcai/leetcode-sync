@@ -87,7 +87,7 @@ async function commit(octokit, owner, repo, commitInfo, treeSHA, latestCommitSHA
 // Returns false if no more submissions should be added.
 function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions) {
     for (const submission of response.data.submissions_dump) {
-      if (submission.timestamp < lastTimestamp) {
+      if (submission.timestamp <= lastTimestamp) {
         return false;
       }
       if (submission.status_display !== 'Accepted') {
