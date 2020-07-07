@@ -1,7 +1,7 @@
 # leetcode-sync
 GitHub Action for syncing LeetCode submissions to a GitHub repository.
 
-To use this action:
+## How to use
 
 1. Login to LeetCode and obtain the `csrftoken` and `LEETCODE_SESSION` cookie values.
 
@@ -10,10 +10,15 @@ To use this action:
     - Look for a network request to https://leetcode.com.
     - Look under `Request Headers` for the `cookie:` attribute to find the values.
 
-2. Add the values as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository), 
+2. Create a new GitHub repository to host the LeetCode submissions.
+
+    - Make sure to have at least one commit, e.g. you can initialize the repository with a README.
+    - It can be either private or public.
+
+3. Add the values from step 1 as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository), 
    e.g. `LEETCODE_CSRF_TOKEN` and `LEETCODE_SESSION`.
 
-3. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`:
+4. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`.
 
     Example workflow file:
 
