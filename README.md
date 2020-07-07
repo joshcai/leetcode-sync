@@ -15,24 +15,24 @@ To use this action:
 
 3. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`:
 
-Example workflow file:
+    Example workflow file:
 
-```yaml
-name: Sync Leetcode
+    ```yaml
+    name: Sync Leetcode
 
-on:
-  schedule:
-    - cron:  '0 8 * * *'
+    on:
+    schedule:
+        - cron:  '0 8 * * *'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    jobs:
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-    - name: Sync
-      uses: joshcai/leetcode-sync@v1.0
-      with:
-        github-token: ${{ github.token }}
-        leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
-        leetcode-session: ${{ secrets.LEETCODE_SESSION }}
-```
+        steps:
+        - name: Sync
+        uses: joshcai/leetcode-sync@v1.0
+        with:
+            github-token: ${{ github.token }}
+            leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+            leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+    ```

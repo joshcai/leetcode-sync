@@ -1,5 +1,8 @@
 name: 'LeetCode Sync'
 description: 'Sync LeetCode submissions to GitHub'
+branding: 
+  icon: git-commit
+  color: yellow
 inputs:
   github-token:
     description: 'The GitHub token'
