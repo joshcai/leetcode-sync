@@ -26,17 +26,17 @@ GitHub Action for syncing LeetCode submissions to a GitHub repository.
     name: Sync Leetcode
 
     on:
-    schedule:
+      schedule:
         - cron:  '0 8 * * *'
 
     jobs:
-    build:
+      build:
         runs-on: ubuntu-latest
 
         steps:
         - name: Sync
-        uses: joshcai/leetcode-sync@v1.0
-        with:
+          uses: joshcai/leetcode-sync@v1.0
+          with:
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
             leetcode-session: ${{ secrets.LEETCODE_SESSION }}
