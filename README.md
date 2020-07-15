@@ -26,8 +26,9 @@ GitHub Action for syncing LeetCode submissions to a GitHub repository.
     name: Sync Leetcode
 
     on:
+      workflow_dispatch:
       schedule:
-        - cron:  '0 8 * * *'
+        - cron:  '0 8 * * 6'
 
     jobs:
       build:
@@ -41,3 +42,5 @@ GitHub Action for syncing LeetCode submissions to a GitHub repository.
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
             leetcode-session: ${{ secrets.LEETCODE_SESSION }}
     ```
+
+5. Run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
