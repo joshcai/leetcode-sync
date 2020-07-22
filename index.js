@@ -153,15 +153,27 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
       },
     };
     console.log(`Getting submission from LeetCode, offset ${offset}`);
-    response = await axios.get('https://leetcode.com/api/submissions/', config);
-    offset += 20;
 
+    const getSubmissions = async (retryCount = 0) => {
+      try {
+        await axios.get('https://leetcode.com/api/submissions/', config);
+      } catch (exception) {
+        if (retryCount > 3) {
+          throw exception;
+        }
+        console.log('Error fetching submissions, retrying in ' + 2 ** retryCount + ' seconds...');
+        // There's a rate limit on LeetCode API, so wait with backoff before retrying. 
+        await delay(2 ** retryCount * 1000);
+        return getSubmissions(retryCount + 1);
+      }
+    };
+
+    response = await getSubmissions();
     if (!addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions)) {
       break;
     }
 
-    // There's a rate limit on LeetCode API, so wait 1 second before trying to fetch the next page. 
-    await delay(1000);
+    offset += 20;
   } while (response.data.has_next);
 
   // We have all submissions we want to write to GitHub now.
