@@ -156,7 +156,8 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
 
     const getSubmissions = async (retryCount = 0) => {
       try {
-        await axios.get('https://leetcode.com/api/submissions/', config);
+        const response = await axios.get('https://leetcode.com/api/submissions/', config);
+        return response;
       } catch (exception) {
         if (retryCount > 3) {
           throw exception;
