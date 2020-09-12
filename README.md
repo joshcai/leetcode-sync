@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="leetcode_sync_transparent.png" width="150"/>
+    <img src="leetcode_sync.png" width="250"/>
 </p>
 
 # LeetCode Sync
