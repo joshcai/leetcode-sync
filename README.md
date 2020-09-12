@@ -1,5 +1,17 @@
-# leetcode-sync
-GitHub Action for syncing LeetCode submissions to a GitHub repository.
+<p align="center">
+  <br>
+    <img src="leetcode_sync_transparent.png" width="150"/>
+  <br>
+</p>
+
+# LeetCode Sync
+GitHub Action for automatically syncing LeetCode submissions to a GitHub repository.
+
+## Features
+
+- Syncs accepted solutions from LeetCode
+- Only syncs solutions that have not been synced before
+- Uploads the latest accepted solution for a single problem if there are multiple submissions per day
 
 ## How to use
 
@@ -36,7 +48,7 @@ GitHub Action for syncing LeetCode submissions to a GitHub repository.
 
         steps:
         - name: Sync
-          uses: joshcai/leetcode-sync@v1.0
+          uses: joshcai/leetcode-sync@v1.1
           with:
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
@@ -44,3 +56,10 @@ GitHub Action for syncing LeetCode submissions to a GitHub repository.
     ```
 
 5. Run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
+
+## Inputs
+
+- `github-token` *(required)*: The GitHub access token for pushing solutions to the repository
+- `leetcode-csrf-token` *(required)*: The LeetCode CSRF token for retrieving submissions from LeetCode
+- `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode
+- `filter-duplicate-secs`: Number of seconds after an accepted solution to ignore other accepted solutions for the same problem, default: 86400 (1 day)
