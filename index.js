@@ -154,22 +154,29 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
     };
     console.log(`Getting submission from LeetCode, offset ${offset}`);
 
-    const getSubmissions = async (retryCount = 0) => {
+    const getSubmissions = async (maxRetries, retryCount = 0) => {
       try {
         const response = await axios.get('https://leetcode.com/api/submissions/', config);
         return response;
       } catch (exception) {
-        if (retryCount > 3) {
+        if (retryCount >= maxRetries) {
+          console.log(exception);
           throw exception;
         }
-        console.log('Error fetching submissions, retrying in ' + 2 ** retryCount + ' seconds...');
+        console.log('Error fetching submissions, retrying in ' + 3 ** retryCount + ' seconds...');
         // There's a rate limit on LeetCode API, so wait with backoff before retrying. 
-        await delay(2 ** retryCount * 1000);
-        return getSubmissions(retryCount + 1);
+        await delay(3 ** retryCount * 1000);
+        return getSubmissions(maxRetries, retryCount + 1);
       }
     };
-
-    response = await getSubmissions();
+    // On the first attempt, there should be no rate limiting issues, so we fail immediately in case
+    // the tokens are configured incorrectly.
+    const maxRetries = (response === null) ? 0 : 5;
+    if (response !== null) {
+      // Add a 1 second delay before all requests after the initial request. 
+      await delay(1000);
+    }
+    response = await getSubmissions(maxRetries);
     if (!addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions)) {
       break;
     }
