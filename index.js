@@ -2,6 +2,9 @@ const axios = require('axios');
 const core = require('@actions/core');
 const { context } = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
+const { throttling } = require("@octokit/plugin-throttling");
+
+const ThrottledOctokit = Octokit.plugin(throttling);
 
 const COMMIT_MESSAGE = 'Sync LeetCode submission';
 const LANG_TO_EXTENSION = {
@@ -109,10 +112,26 @@ function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissi
 }
 
 async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession) {
-  const octokit = new Octokit({
+  const octokit = new ThrottledOctokit({
     auth: githubToken,
     userAgent: 'LeetCode sync to GitHub - GitHub Action',
+    // Reference: https://github.com/octokit/plugin-throttling.js
+    throttle: {
+      onRateLimit: (retryAfter, options, octokit) => {
+        octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`)
+  
+        if (options.request.retryCount === 0) { // only retries once
+          octokit.log.info(`Retrying after ${retryAfter} seconds!`)
+          return true
+        }
+      },
+      onAbuseLimit: (retryAfter, options, octokit) => {
+        // does not retry, only logs a warning
+        octokit.log.warn(`Abuse detected for request ${options.method} ${options.url}`)
+      }
+    }
   });
+  
   // First, get the time the timestamp for when the syncer last ran.
   const commits = await octokit.repos.listCommits({
     owner: owner,
