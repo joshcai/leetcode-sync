@@ -61,3 +61,18 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - `leetcode-csrf-token` *(required)*: The LeetCode CSRF token for retrieving submissions from LeetCode
 - `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode
 - `filter-duplicate-secs`: Number of seconds after an accepted solution to ignore other accepted solutions for the same problem, default: 86400 (1 day)
+
+## FAQ
+
+#### Job fails with "HttpError: API rate limit exceeded for installation ID \<id\>"
+    
+This likely means that you hit a rate limit when committing to GitHub (this may happen if you have over ~300 submissions initially). Since the syncer writes in reverse chronological order, it should pick up syncing submissions from where it left off on the next run of the workflow, so just retry the workflow manually after some time.
+    
+## Acknowledgements 
+
+Special thanks to the following people who helped beta test this GitHub Action and gave feedback on improving it:
+
+- [dengl11](https://github.com/dengl11)
+- [uakfdotb](https://github.com/uakfdotb)
+- [hexecute](https://github.com/hexecute)
+- [JonathanZhu11](https://github.com/JonathanZhu11)
