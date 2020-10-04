@@ -29,7 +29,7 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
-async function commit(octokit, owner, repo, commitInfo, treeSHA, latestCommitSHA, submission) {
+async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
   const name = normalizeName(submission.title);
   console.log(`Committing solution for ${name}...`);
 
@@ -75,7 +75,7 @@ async function commit(octokit, owner, repo, commitInfo, treeSHA, latestCommitSHA
     owner: owner,
     repo: repo,
     sha: commitResponse.data.sha,
-    ref: 'heads/master',
+    ref: 'heads/' + defaultBranch,
     force: true
   });
 
@@ -185,6 +185,13 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   } while (response.data.has_next);
 
   // We have all submissions we want to write to GitHub now.
+  // First, get the default branch to write to.
+  const repoInfo = await octokit.repos.get({
+    owner: owner,
+    repo: repo,
+  });
+  const defaultBranch = repoInfo.data.default_branch;
+  console.log(`Default branch for ${owner}/${repo}: ${defaultBranch}`);
   // Write in reverse order (oldest first), so that if there's errors, the last sync time
   // is still valid.
   console.log(`Syncing ${submissions.length} submissions...`);
@@ -192,7 +199,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, commitInfo, treeSHA, latestCommitSHA, submission);
+    [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
   }
   console.log('Done syncing all submissions.');
 }
