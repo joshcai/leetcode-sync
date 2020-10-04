@@ -7,7 +7,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
 ## Features
 
-- Syncs accepted solutions from LeetCode
+- Syncs accepted solutions from LeetCode to the default branch of the GitHub repo
 - Only syncs solutions that have not been synced before
 - Uploads the latest accepted solution for a single problem if there are multiple submissions per day
 
@@ -22,7 +22,6 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
 2. Create a new GitHub repository to host the LeetCode submissions.
 
-    - Make sure to have at least one commit, e.g. you can initialize the repository with a README.
     - It can be either private or public.
 
 3. Add the values from step 1 as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository), 
@@ -46,7 +45,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
         steps:
         - name: Sync
-          uses: joshcai/leetcode-sync@v1.1
+          uses: joshcai/leetcode-sync@v1.2
           with:
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
