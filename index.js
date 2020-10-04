@@ -25,13 +25,17 @@ const LANG_TO_EXTENSION = {
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
+function log(message) {
+  console.log(`[${new Date().toUTCString()}] ${message}`);
+}
+
 function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
 async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
   const name = normalizeName(submission.title);
-  console.log(`Committing solution for ${name}...`);
+  log(`Committing solution for ${name}...`);
 
   if (!LANG_TO_EXTENSION[submission.lang]) {
     throw `Language ${submission.lang} does not have a registered extension.`;
@@ -79,7 +83,7 @@ async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, 
     force: true
   });
 
-  console.log(`Committed solution for ${name}`);
+  log(`Committed solution for ${name}`);
 
   return [treeResponse.data.sha, commitResponse.data.sha];
 }
@@ -152,7 +156,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
         'Cookie':  `csrftoken=${leetcodeCSRFToken};LEETCODE_SESSION=${leetcodeSession};`,
       },
     };
-    console.log(`Getting submission from LeetCode, offset ${offset}`);
+    log(`Getting submission from LeetCode, offset ${offset}`);
 
     const getSubmissions = async (maxRetries, retryCount = 0) => {
       try {
@@ -160,10 +164,9 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
         return response;
       } catch (exception) {
         if (retryCount >= maxRetries) {
-          console.log(exception);
           throw exception;
         }
-        console.log('Error fetching submissions, retrying in ' + 3 ** retryCount + ' seconds...');
+        log('Error fetching submissions, retrying in ' + 3 ** retryCount + ' seconds...');
         // There's a rate limit on LeetCode API, so wait with backoff before retrying. 
         await delay(3 ** retryCount * 1000);
         return getSubmissions(maxRetries, retryCount + 1);
@@ -191,17 +194,17 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
     repo: repo,
   });
   const defaultBranch = repoInfo.data.default_branch;
-  console.log(`Default branch for ${owner}/${repo}: ${defaultBranch}`);
+  log(`Default branch for ${owner}/${repo}: ${defaultBranch}`);
   // Write in reverse order (oldest first), so that if there's errors, the last sync time
   // is still valid.
-  console.log(`Syncing ${submissions.length} submissions...`);
+  log(`Syncing ${submissions.length} submissions...`);
   let latestCommitSHA = commits.data[0].sha;
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
     [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
   }
-  console.log('Done syncing all submissions.');
+  log('Done syncing all submissions.');
 }
 
 async function main() {
@@ -215,4 +218,8 @@ async function main() {
   await sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
 }
 
-main().catch(error => core.setFailed(error));
+main().catch((error) => {
+  log(error.stack);
+  core.setFailed(error)
+});
+
