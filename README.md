@@ -45,7 +45,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
         steps:
         - name: Sync
-          uses: joshcai/leetcode-sync@v1.2
+          uses: joshcai/leetcode-sync@v1.3
           with:
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
