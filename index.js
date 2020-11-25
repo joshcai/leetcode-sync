@@ -13,7 +13,9 @@ const LANG_TO_EXTENSION = {
   'java': 'java',
   'javascript': 'js',
   'kotlin': 'kt',
+  'mssql': 'sql',
   'mysql': 'sql',
+  'oraclesql': 'sql',
   'php': 'php',
   'python': 'py',
   'python3': 'py',
@@ -21,6 +23,7 @@ const LANG_TO_EXTENSION = {
   'rust': 'rs',
   'scala': 'scala',
   'swift': 'swift',
+  'typescript': 'ts',
 };
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
