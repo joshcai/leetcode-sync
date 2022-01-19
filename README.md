@@ -56,6 +56,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
 ## Inputs
 
+- `user` *(optional)*: The user to sync (for shared repos)
 - `github-token` *(required)*: The GitHub access token for pushing solutions to the repository
 - `leetcode-csrf-token` *(required)*: The LeetCode CSRF token for retrieving submissions from LeetCode
 - `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode
