@@ -4,6 +4,9 @@ branding:
   icon: git-commit
   color: yellow
 inputs:
+  user:
+    description: 'The user to sync'
+    required: false
   github-token:
     description: 'The GitHub token'
     required: true
