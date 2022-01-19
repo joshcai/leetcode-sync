@@ -47,7 +47,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
         - name: Sync
           uses: CherryKatatonic/leetcode-sync@v1.4
           with:
-            user: name
+            destination-folder: my-folder
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
             leetcode-session: ${{ secrets.LEETCODE_SESSION }}
@@ -57,7 +57,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
 ## Inputs
 
-- `user` *(optional)*: The user to sync (for shared repos)
+- `destination-folder` *(optional)*: The folder in your repo to save the submissions to (necessary for shared repos)
 - `github-token` *(required)*: The GitHub access token for pushing solutions to the repository
 - `leetcode-csrf-token` *(required)*: The LeetCode CSRF token for retrieving submissions from LeetCode
 - `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode

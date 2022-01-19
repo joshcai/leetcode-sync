@@ -36,7 +36,7 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
-async function commit(octokit, user, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
+async function commit(octokit, destinationFolder, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
   const name = normalizeName(submission.title);
   log(`Committing solution for ${name}...`);
 
@@ -46,7 +46,7 @@ async function commit(octokit, user, owner, repo, defaultBranch, commitInfo, tre
 
   const treeData = [
     {
-      path: `${user}/problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`,
+      path: `${destinationFolder}/problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`,
       mode: '100644',
       content: submission.code,
     }
@@ -115,7 +115,7 @@ function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissi
   return true;
 }
 
-async function sync(user, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession) {
+async function sync(destinationFolder, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession) {
   const octokit = new Octokit({
     auth: githubToken,
     userAgent: 'LeetCode sync to GitHub - GitHub Action',
@@ -205,13 +205,13 @@ async function sync(user, githubToken, owner, repo, filterDuplicateSecs, leetcod
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit(octokit, user, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
+    [treeSHA, latestCommitSHA] = await commit(octokit, destinationFolder, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
   }
   log('Done syncing all submissions.');
 }
 
 async function main() {
-  const user = core.getInput('user');
+  const destinationFolder = core.getInput('destination-folder');
   const githubToken = core.getInput('github-token');
   const owner = context.repo.owner;
   const repo = context.repo.repo;
@@ -219,7 +219,7 @@ async function main() {
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
 
-  await sync(user, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
+  await sync(destinationFolder, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
 }
 
 main().catch((error) => {

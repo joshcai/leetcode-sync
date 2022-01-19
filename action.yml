@@ -4,8 +4,8 @@ branding:
   icon: git-commit
   color: yellow
 inputs:
-  user:
-    description: 'The user to sync'
+  destination-folder:
+    description: 'The folder to save the synced files in (relative to the top level of your repo)'
     required: false
   github-token:
     description: 'The GitHub token'
