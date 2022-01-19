@@ -1,5 +1,5 @@
 {
-  "name": "cherrykatatonic-leetcode-sync",
+  "name": "leetcode-sync",
   "version": "1.4.0",
   "description": "Forked GitHub Action for syncing LeetCode submissions to a git repository",
   "main": "index.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cherrykatatonic/leetcode-sync.git"
+    "url": "git+https://github.com/joshcai/leetcode-sync.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/cherrykatatonic/leetcode-sync/issues"
+    "url": "https://github.com/joshcai/leetcode-sync/issues"
   },
-  "homepage": "https://github.com/cherrykatatonic/leetcode-sync#readme",
+  "homepage": "https://github.com/joshcai/leetcode-sync#readme",
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
