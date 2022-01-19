@@ -36,7 +36,7 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
-async function commit(octokit, destinationFolder, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
+async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder) {
   const name = normalizeName(submission.title);
   log(`Committing solution for ${name}...`);
 
@@ -115,7 +115,7 @@ function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissi
   return true;
 }
 
-async function sync(destinationFolder, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession) {
+async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder) {
   const octokit = new Octokit({
     auth: githubToken,
     userAgent: 'LeetCode sync to GitHub - GitHub Action',
@@ -205,7 +205,7 @@ async function sync(destinationFolder, githubToken, owner, repo, filterDuplicate
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit(octokit, destinationFolder, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
+    [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder);
   }
   log('Done syncing all submissions.');
 }
@@ -219,7 +219,7 @@ async function main() {
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
 
-  await sync(destinationFolder, githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
+  await sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder);
 }
 
 main().catch((error) => {
