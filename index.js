@@ -36,7 +36,19 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
-async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder) {
+async function commit(params) {
+  const {
+    octokit,
+    owner,
+    repo,
+    defaultBranch,
+    commitInfo,
+    treeSHA,
+    latestCommitSHA,
+    submission,
+    destinationFolder
+  } = params;
+
   const name = normalizeName(submission.title);
   log(`Committing solution for ${name}...`);
 
@@ -92,7 +104,15 @@ async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, 
 }
 
 // Returns false if no more submissions should be added.
-function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions) {
+function addToSubmissions(params) {
+  const {
+    response,
+    lastTimestamp,
+    filterDuplicateSecs,
+    submissions_dict,
+    submissions
+  } = params;
+
   for (const submission of response.data.submissions_dump) {
     if (submission.timestamp <= lastTimestamp) {
       return false;
@@ -115,7 +135,17 @@ function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissi
   return true;
 }
 
-async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder) {
+async function sync(inputs) {
+  const {
+    githubToken,
+    owner,
+    repo,
+    filterDuplicateSecs,
+    leetcodeCSRFToken,
+    leetcodeSession,
+    destinationFolder
+  } = inputs;
+
   const octokit = new Octokit({
     auth: githubToken,
     userAgent: 'LeetCode sync to GitHub - GitHub Action',
@@ -183,7 +213,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
       await delay(1000);
     }
     response = await getSubmissions(maxRetries);
-    if (!addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions)) {
+    if (!addToSubmissions({ response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions })) {
       break;
     }
 
@@ -205,21 +235,21 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder);
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
   }
   log('Done syncing all submissions.');
 }
 
 async function main() {
-  const destinationFolder = core.getInput('destination-folder');
   const githubToken = core.getInput('github-token');
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const leetcodeCSRFToken = core.getInput('leetcode-csrf-token');
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
+  const destinationFolder = core.getInput('destination-folder');
 
-  await sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder);
+  await sync({ githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder });
 }
 
 main().catch((error) => {
