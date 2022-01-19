@@ -1,6 +1,6 @@
 {
   "name": "cherrykatatonic-leetcode-sync",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "Forked GitHub Action for syncing LeetCode submissions to a git repository",
   "main": "index.js",
   "scripts": {
