@@ -63,6 +63,10 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode
 - `filter-duplicate-secs`: Number of seconds after an accepted solution to ignore other accepted solutions for the same problem, default: 86400 (1 day)
 
+## Shared Repos
+
+A single repo can be shared by multiple users by using the `destination-folder` input field to sync each user's files to a separate folder. This is useful for users who want to add a more social, collaborative, or competitive aspect to their LeetCode sync repo.
+
 ## FAQ
 
 #### Job fails with "HttpError: API rate limit exceeded for installation ID \<id\>"
