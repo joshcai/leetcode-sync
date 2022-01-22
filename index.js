@@ -56,9 +56,8 @@ async function commit(params) {
     throw `Language ${submission.lang} does not have a registered extension.`;
   }
 
-  const path = !!destinationFolder
-    ? `${destinationFolder}/problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
-    : `problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
+  const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
+  const path = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
 
   const treeData = [
     {

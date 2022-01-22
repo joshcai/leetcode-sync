@@ -1,6 +1,6 @@
 {
   "name": "leetcode-sync",
-  "version": "1.4.0",
+  "version": "1.0.0",
   "description": "GitHub Action for syncing LeetCode submissions to a git repository",
   "main": "index.js",
   "scripts": {
