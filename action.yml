@@ -4,9 +4,6 @@ branding:
   icon: git-commit
   color: yellow
 inputs:
-  destination-folder:
-    description: 'The folder to save the synced files in (relative to the top level of your repo)'
-    required: false
   github-token:
     description: 'The GitHub token'
     required: true
@@ -20,6 +17,9 @@ inputs:
     description: 'Number of seconds after an accepted solution to ignore other accepted solutions for the same problem'
     required: false
     default: 86400
+  destination-folder:
+    description: 'The folder to save the synced files in (relative to the top level of your repo)'
+    required: false
 runs:
   using: 'node12'
   main: 'index.js'
