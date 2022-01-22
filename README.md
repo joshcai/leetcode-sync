@@ -50,6 +50,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
             github-token: ${{ github.token }}
             leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
             leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+            destination-folder: my-folder
     ```
 
 5. Run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
@@ -60,6 +61,11 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - `leetcode-csrf-token` *(required)*: The LeetCode CSRF token for retrieving submissions from LeetCode
 - `leetcode-session` *(required)*: The LeetCode session value for retrieving submissions from LeetCode
 - `filter-duplicate-secs`: Number of seconds after an accepted solution to ignore other accepted solutions for the same problem, default: 86400 (1 day)
+- `destination-folder` *(optional)*: The folder in your repo to save the submissions to (necessary for shared repos)
+
+## Shared Repos
+
+A single repo can be shared by multiple users by using the `destination-folder` input field to sync each user's files to a separate folder. This is useful for users who want to add a more social, collaborative, or competitive aspect to their LeetCode sync repo.
 
 ## FAQ
 

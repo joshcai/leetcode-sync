@@ -36,7 +36,19 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, '_');
 }
 
-async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission) {
+async function commit(params) {
+  const {
+    octokit,
+    owner,
+    repo,
+    defaultBranch,
+    commitInfo,
+    treeSHA,
+    latestCommitSHA,
+    submission,
+    destinationFolder
+  } = params;
+
   const name = normalizeName(submission.title);
   log(`Committing solution for ${name}...`);
 
@@ -44,14 +56,17 @@ async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, 
     throw `Language ${submission.lang} does not have a registered extension.`;
   }
 
+  const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
+  const path = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
+
   const treeData = [
     {
-      path: `problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`,
+      path,
       mode: '100644',
       content: submission.code,
     }
   ];
-  
+
   const treeResponse = await octokit.git.createTree({
     owner: owner,
     repo: repo,
@@ -92,30 +107,48 @@ async function commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, 
 }
 
 // Returns false if no more submissions should be added.
-function addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions) {
-    for (const submission of response.data.submissions_dump) {
-      if (submission.timestamp <= lastTimestamp) {
-        return false;
-      }
-      if (submission.status_display !== 'Accepted') {
-        continue;
-      }
-      const name = normalizeName(submission.title);
-      const lang = submission.lang;
-      if (!submissions_dict[name]) {
-        submissions_dict[name] = {};
-      }
-      // Filter out other accepted solutions less than one day from the most recent one.
-      if (submissions_dict[name][lang] && submissions_dict[name][lang] - submission.timestamp < filterDuplicateSecs) {
-        continue;
-      }
-      submissions_dict[name][lang] = submission.timestamp;
-      submissions.push(submission);
+function addToSubmissions(params) {
+  const {
+    response,
+    lastTimestamp,
+    filterDuplicateSecs,
+    submissions_dict,
+    submissions
+  } = params;
+
+  for (const submission of response.data.submissions_dump) {
+    if (submission.timestamp <= lastTimestamp) {
+      return false;
     }
+    if (submission.status_display !== 'Accepted') {
+      continue;
+    }
+    const name = normalizeName(submission.title);
+    const lang = submission.lang;
+    if (!submissions_dict[name]) {
+      submissions_dict[name] = {};
+    }
+    // Filter out other accepted solutions less than one day from the most recent one.
+    if (submissions_dict[name][lang] && submissions_dict[name][lang] - submission.timestamp < filterDuplicateSecs) {
+      continue;
+    }
+    submissions_dict[name][lang] = submission.timestamp;
+    submissions.push(submission);
+  }
   return true;
 }
 
-async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession) {
+async function sync(inputs) {
+  const {
+    githubToken,
+    owner,
+    repo,
+    filterDuplicateSecs,
+    leetcodeCSRFToken,
+    leetcodeSession,
+    destinationFolder
+  } = inputs;
+
   const octokit = new Octokit({
     auth: githubToken,
     userAgent: 'LeetCode sync to GitHub - GitHub Action',
@@ -131,7 +164,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   // commitInfo is used to get the original name / email to use for the author / committer. 
   // Since we need to modify the commit time, we can't use the default settings for the
   // authenticated user.
-  let commitInfo = commits.data[commits.data.length-1].commit.author;
+  let commitInfo = commits.data[commits.data.length - 1].commit.author;
   for (const commit of commits.data) {
     if (!commit.commit.message.startsWith(COMMIT_MESSAGE)) {
       continue
@@ -156,7 +189,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRFToken': leetcodeCSRFToken,
-        'Cookie':  `csrftoken=${leetcodeCSRFToken};LEETCODE_SESSION=${leetcodeSession};`,
+        'Cookie': `csrftoken=${leetcodeCSRFToken};LEETCODE_SESSION=${leetcodeSession};`,
       },
     };
     log(`Getting submission from LeetCode, offset ${offset}`);
@@ -183,7 +216,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
       await delay(1000);
     }
     response = await getSubmissions(maxRetries);
-    if (!addToSubmissions(response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions)) {
+    if (!addToSubmissions({ response, lastTimestamp, filterDuplicateSecs, submissions_dict, submissions })) {
       break;
     }
 
@@ -205,7 +238,7 @@ async function sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFT
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit(octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission);
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
   }
   log('Done syncing all submissions.');
 }
@@ -217,8 +250,9 @@ async function main() {
   const leetcodeCSRFToken = core.getInput('leetcode-csrf-token');
   const leetcodeSession = core.getInput('leetcode-session');
   const filterDuplicateSecs = core.getInput('filter-duplicate-secs');
+  const destinationFolder = core.getInput('destination-folder');
 
-  await sync(githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession);
+  await sync({ githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder });
 }
 
 main().catch((error) => {
