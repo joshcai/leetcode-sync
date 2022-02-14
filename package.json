@@ -21,6 +21,6 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "@octokit/rest": "^18.0.0",
-    "axios": "^0.19.2"
+    "axios": "^0.21.2"
   }
 }
