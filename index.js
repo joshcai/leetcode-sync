@@ -9,6 +9,7 @@ const LANG_TO_EXTENSION = {
   'c': 'c',
   'cpp': 'cpp',
   'csharp': 'cs',
+  'dart': 'dart',
   'golang': 'go',
   'java': 'java',
   'javascript': 'js',
