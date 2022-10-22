@@ -1,25 +1,25 @@
-name: 'LeetCode Sync'
-description: 'Sync LeetCode submissions to GitHub'
-branding: 
+name: "LeetCode Sync"
+description: "Sync LeetCode submissions to GitHub"
+branding:
   icon: git-commit
   color: yellow
 inputs:
   github-token:
-    description: 'The GitHub token'
+    description: "The GitHub token"
     required: true
   leetcode-csrf-token:
-    description: 'The LeetCode CSRF token'
+    description: "The LeetCode CSRF token"
     required: true
   leetcode-session:
-    description: 'The LeetCode session value'
+    description: "The LeetCode session value"
     required: true
   filter-duplicate-secs:
-    description: 'Number of seconds after an accepted solution to ignore other accepted solutions for the same problem'
+    description: "Number of seconds after an accepted solution to ignore other accepted solutions for the same problem"
     required: false
     default: 86400
   destination-folder:
-    description: 'The folder to save the synced files in (relative to the top level of your repo)'
+    description: "The folder to save the synced files in (relative to the top level of your repo)"
     required: false
 runs:
-  using: 'node12'
-  main: 'index.js'
+  using: "node16"
+  main: "index.js"
