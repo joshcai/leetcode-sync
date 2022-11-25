@@ -1,0 +1,18 @@
+name: Build Action
+
+on:
+  workflow_dispath:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: tool3/ncc@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        src: 'index.js'
+    - uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
