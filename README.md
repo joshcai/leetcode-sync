@@ -68,6 +68,26 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
 A single repo can be shared by multiple users by using the `destination-folder` input field to sync each user's files to a separate folder. This is useful for users who want to add a more social, collaborative, or competitive aspect to their LeetCode sync repo.
 
+## Contributing
+
+#### Testing locally
+
+If you want to test changes to the action locally without having to commit and run the workflow on GitHub, you can edit `src/test_config.js` to have the required config values and then run: 
+
+`$ node index.js test`
+
+If you're using Replit, you can also just use the `Run` button, which is already configured to the above command.
+
+#### Adding a new workflow parameter
+
+If you add a workflow parameter, please make sure to also add it in `src/test_config.js`, so that it can be tested locally. 
+
+You will need to manually run:
+
+`$ git add -f src/test_config.js`
+
+Since this file is in the `.gitignore` file to avoid users accidentally committing their key information.
+
 ## FAQ
 
 #### Job fails with "HttpError: API rate limit exceeded for installation ID \<id\>"

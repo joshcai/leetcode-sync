@@ -1,0 +1,4 @@
+# Don't accidentally allow users to commit changes in test_config.js, since it
+# may contain sensitive keys. Users who want to change this file, e.g. add a new
+# workflow parameter, should explicitly run `git add -f src/test_config.js`.
+src/test_config.js
