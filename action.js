@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { context } = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
 
 const COMMIT_MESSAGE = 'Sync LeetCode submission';

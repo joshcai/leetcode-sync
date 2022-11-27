@@ -1,5 +1,6 @@
 const action = require('./action');
 const core = require('@actions/core');
+const { context } = require('@actions/github');
 
 async function main() {
   const githubToken = core.getInput('github-token');
