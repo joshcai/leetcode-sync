@@ -94,6 +94,9 @@ Since this file is in the `.gitignore` file to avoid users accidentally committi
 
 This likely means that you hit a rate limit when committing to GitHub (this may happen if you have over ~300 submissions initially). Since the syncer writes in reverse chronological order, it should pick up syncing submissions from where it left off on the next run of the workflow, so just retry the workflow manually after some time.
 
+#### Job fails with "HttpError: Resource not accessible by integration"
+This means the github token you're using does not have permission to write to your repo. If you're using the default `github.token` method follow the instructions [here] (https://docs.github.com/en/actions/security-guides/automatic-token-authentication)
+
 ## Acknowledgements
 
 Special thanks to the following people who helped beta test this GitHub Action and gave feedback on improving it:
