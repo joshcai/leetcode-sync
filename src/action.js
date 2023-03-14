@@ -196,6 +196,7 @@ async function sync(inputs) {
     const getSubmissions = async (maxRetries, retryCount = 0) => {
       try {
         const response = await axios.get('https://leetcode.com/api/submissions/', config);
+        log(`Successfully fetched submission from LeetCode, offset ${offset}`);
         return response;
       } catch (exception) {
         if (retryCount >= maxRetries) {
