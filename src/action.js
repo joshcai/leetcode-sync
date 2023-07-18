@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { Octokit } = require('@octokit/rest');
+const fetch = require("node-fetch");
 
 const COMMIT_MESSAGE = 'Sync LeetCode submission';
 const LANG_TO_EXTENSION = {
@@ -45,7 +46,8 @@ async function commit(params) {
     treeSHA,
     latestCommitSHA,
     submission,
-    destinationFolder
+    destinationFolder,
+    question_data
   } = params;
 
   const name = normalizeName(submission.title);
@@ -56,13 +58,13 @@ async function commit(params) {
   }
 
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
-  const path = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
+  const path = `${prefix}problems/${name}/solution.md` // Markdown file for the problem with the solution at the end
 
   const treeData = [
     {
       path,
       mode: '100644',
-      content: submission.code,
+      content: question_data + '\n' + '# Solution' + '\n' + '```' + submission.lang + ' \n' + submission.code + '\n' + '```',
     }
   ];
 
@@ -103,6 +105,40 @@ async function commit(params) {
   log(`Committed solution for ${name}`);
 
   return [treeResponse.data.sha, commitResponse.data.sha];
+}
+
+async function getQuestionData(titleSlug, leetcodeSession) {
+  log(`Getting question data for ${titleSlug}...`);
+
+  const headers = {
+    "Content-Type": "application/json",
+    "Cookie": `LEETCODE_SESSION=${leetcodeSession};`
+  }
+
+  const graphql = JSON.stringify({
+    query: `query getQuestionDetail($titleSlug: String!) {
+      question(titleSlug: $titleSlug) {
+        content
+      }
+    }`,
+    variables: {"titleSlug": titleSlug},
+  })
+
+  const requestOptions = {
+    method: 'POST',
+    headers,
+    body: graphql,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch("https://leetcode.com/graphql/", requestOptions);
+    const result = await response.text();
+    const parsedResult = JSON.parse(result);
+    return parsedResult.data.question.content;
+  } catch (error) {
+    console.log('error', error);
+  }
 }
 
 // Returns false if no more submissions should be added.
@@ -238,7 +274,10 @@ async function sync(inputs) {
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder });
+    
+    // Get the question data for the submission.
+    const question_data = await getQuestionData(submission.title_slug, leetcodeSession);
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder, question_data });
   }
   log('Done syncing all submissions.');
 }
