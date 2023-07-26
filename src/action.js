@@ -52,9 +52,9 @@ async function commit(params) {
   const name = normalizeName(submission.title);
   log(`Committing solution for ${name}...`);
 
-  if (!LANG_TO_EXTENSION[submission.lang]) {
-    throw `Language ${submission.lang} does not have a registered extension.`;
-  }
+  // if (!LANG_TO_EXTENSION[submission.lang]) {
+  //   throw `Language ${submission.lang} does not have a registered extension.`;
+  // }
 
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
   const path = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
