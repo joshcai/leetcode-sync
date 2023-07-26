@@ -23,7 +23,7 @@ const LANG_TO_EXTENSION = {
   'scala': 'scala',
   'swift': 'swift',
   'typescript': 'ts',
-  'elixir': 'ex',
+  'elixir': 'exs',
 };
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
