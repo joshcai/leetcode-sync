@@ -18,6 +18,7 @@ const LANG_TO_EXTENSION = {
   'php': 'php',
   'python': 'py',
   'python3': 'py',
+  'pythondata': 'py',
   'ruby': 'rb',
   'rust': 'rs',
   'scala': 'scala',
