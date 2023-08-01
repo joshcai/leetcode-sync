@@ -28,7 +28,9 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 3. Add the values from step 1 as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository),
    e.g. `LEETCODE_CSRF_TOKEN` and `LEETCODE_SESSION`.
 
-4. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`.
+4. Go to REPO > settings > actions and in Workflow Permissions section give actions Read and Write permissions.
+
+5. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`.
 
    Example workflow file:
 
@@ -54,7 +56,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
              destination-folder: my-folder
    ```
 
-5. After you've submitted a LeetCode solution, run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
+6. After you've submitted a LeetCode solution, run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
 
 ## Inputs
 
