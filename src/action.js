@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { Octokit } = require('@octokit/rest');
-const fetch = require("node-fetch");
 
 const COMMIT_MESSAGE = 'Sync LeetCode submission';
 const LANG_TO_EXTENSION = {
@@ -64,7 +63,7 @@ async function commit(params) {
     {
       path,
       mode: '100644',
-      content: question_data + '\n' + '# Solution' + '\n' + '```' + submission.lang + ' \n' + submission.code + '\n' + '```',
+      content: question_data + '\n \n ' + '# Solution' + '\n' + '```' + submission.lang + ' \n' + submission.code + '\n' + '```',
     }
   ];
 
@@ -124,18 +123,11 @@ async function getQuestionData(titleSlug, leetcodeSession) {
     variables: {"titleSlug": titleSlug},
   })
 
-  const requestOptions = {
-    method: 'POST',
-    headers,
-    body: graphql,
-    redirect: 'follow'
-  };
 
   try {
-    const response = await fetch("https://leetcode.com/graphql/", requestOptions);
-    const result = await response.text();
-    const parsedResult = JSON.parse(result);
-    return parsedResult.data.question.content;
+    const response = await axios.post("https://leetcode.com/graphql/", graphql, {headers});
+    const result = await response.data;
+    return result.data.question.content;
   } catch (error) {
     console.log('error', error);
   }
