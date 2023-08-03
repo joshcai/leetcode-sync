@@ -57,14 +57,21 @@ async function commit(params) {
   }
 
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
-  const path = `${prefix}problems/${name}/solution.md` // Markdown file for the problem with the solution at the end
+  const questionPath = `${prefix}problems/${name}/question.md`; // Markdown file for the problem with question data
+  const solutionPath = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`; // Separate file for the solution
+
 
   const treeData = [
     {
-      path,
+      path: questionPath,
       mode: '100644',
-      content: question_data + '\n \n ' + '# Solution' + '\n' + '```' + submission.lang + ' \n' + submission.code + '\n' + '```',
-    }
+      content: question_data,
+    },
+    {
+      path: solutionPath,
+      mode: '100644',
+      content: submission.code,
+    },
   ];
 
   const treeResponse = await octokit.git.createTree({
