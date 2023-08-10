@@ -1,6 +1,6 @@
 name: 'LeetCode Sync'
 description: 'Sync LeetCode submissions to GitHub'
-branding: 
+branding:
   icon: git-commit
   color: yellow
 inputs:
@@ -20,6 +20,15 @@ inputs:
   destination-folder:
     description: 'The folder to save the synced files in (relative to the top level of your repo)'
     required: false
+    default: null
+  verbose:
+    description: 'Requires an additional API call but adds submission percentiles and question numbers to the repo'
+    required: false
+    default: true
+  commit-header:
+    description: 'How the automated commits should be prefixed'
+    required: false
+    default: '[LeetCode Sync]'
 runs:
   using: 'node16'
   main: 'index.js'

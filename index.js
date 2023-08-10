@@ -18,6 +18,8 @@ async function main() {
     leetcodeSession = config.LEETCODE_SESSION;
     filterDuplicateSecs = config.FILTER_DUPLICATE_SECS;
     destinationFolder = config.DESTINATION_FOLDER;
+    verbose = config.VERBOSE;
+    commitHeader = config.COMMIT_HEADER;
   } else {
     githubToken = core.getInput('github-token');
     owner = context.repo.owner;
@@ -26,9 +28,11 @@ async function main() {
     leetcodeSession = core.getInput('leetcode-session');
     filterDuplicateSecs = core.getInput('filter-duplicate-secs');
     destinationFolder = core.getInput('destination-folder');
+    verbose = core.getInput('verbose');
+    commitHeader = core.getInput('commit-header');
   }
 
-  await action.sync({ githubToken, owner, repo, filterDuplicateSecs, leetcodeCSRFToken, leetcodeSession, destinationFolder });
+  await action.sync({ githubToken, owner, repo, leetcodeCSRFToken, leetcodeSession, filterDuplicateSecs, destinationFolder, verbose, commitHeader });
 }
 
 main().catch((error) => {
