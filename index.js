@@ -18,7 +18,7 @@ async function main() {
     leetcodeSession = config.LEETCODE_SESSION;
     filterDuplicateSecs = config.FILTER_DUPLICATE_SECS;
     destinationFolder = config.DESTINATION_FOLDER;
-    verbose = config.VERBOSE;
+    verbose = config.VERBOSE.toString();  // Convert to string to match core.getInput('verbose') return type
     commitHeader = config.COMMIT_HEADER;
   } else {
     githubToken = core.getInput('github-token');
