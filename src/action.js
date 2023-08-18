@@ -100,7 +100,8 @@ async function commit(params) {
     latestCommitSHA,
     submission,
     destinationFolder,
-    commitHeader
+    commitHeader,
+    questionData
   } = params;
 
   const name = normalizeName(submission.title);
@@ -120,12 +121,17 @@ async function commit(params) {
     message = `${commitName} Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
     qid = '';
   }
-
-  const path = `${prefix}${qid}${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`
+  const questionPath = `${prefix}${qid}${name}/README.md`;  // Markdown file for the problem with question data
+  const solutionPath = `${prefix}${qid}${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`;  // Separate file for the solution
 
   const treeData = [
     {
-      path,
+      path: questionPath,
+      mode: '100644',
+      content: questionData,
+    },
+    {
+      path: solutionPath,
       mode: '100644',
       content: `${submission.code}\n`,  // Adds newline at EOF to conform to git recommendations
     }
@@ -168,6 +174,33 @@ async function commit(params) {
   log(`Committed solution for ${name}`);
 
   return [treeResponse.data.sha, commitResponse.data.sha];
+}
+
+async function getQuestionData(titleSlug, leetcodeSession) {
+  log(`Getting question data for ${titleSlug}...`);
+
+  const headers = {
+    "Content-Type": "application/json",
+    "Cookie": `LEETCODE_SESSION=${leetcodeSession};`
+  }
+
+  const graphql = JSON.stringify({
+    query: `query getQuestionDetail($titleSlug: String!) {
+      question(titleSlug: $titleSlug) {
+        content
+      }
+    }`,
+    variables: {"titleSlug": titleSlug},
+  })
+
+
+  try {
+    const response = await axios.post("https://leetcode.com/graphql/", graphql, {headers});
+    const result = await response.data;
+    return result.data.question.content;
+  } catch (error) {
+    console.log('error', error);
+  }
 }
 
 // Returns false if no more submissions should be added.
@@ -304,11 +337,14 @@ async function sync(inputs) {
   let latestCommitSHA = commits.data[0].sha;
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
-    let submission = submissions[i];
+    submission = submissions[i];
     if (verbose != 'false') {
       submission = await getInfo(submission, leetcodeSession, leetcodeCSRFToken);
     }
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder, commitHeader })
+
+    // Get the question data for the submission.
+    const questionData = await getQuestionData(submission.title_slug, leetcodeSession);
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder, commitHeader, questionData });
   }
   log('Done syncing all submissions.');
 }
