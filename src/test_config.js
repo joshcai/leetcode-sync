@@ -11,5 +11,5 @@ module.exports = {
   FILTER_DUPLICATE_SECS: 86400,
   DESTINATION_FOLDER: null,
   VERBOSE: true,
-  COMMIT_HEADER: '[LeetCode Sync]'
+  COMMIT_HEADER: 'Sync LeetCode submission'
 }

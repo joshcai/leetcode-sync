@@ -22,13 +22,13 @@ inputs:
     required: false
     default: null
   verbose:
-    description: 'Requires an additional API call but adds submission percentiles and question numbers to the repo'
+    description: 'Adds submission percentiles and question numbers to the repo (requires an additional API call)'
     required: false
     default: true
   commit-header:
     description: 'How the automated commits should be prefixed'
     required: false
-    default: '[LeetCode Sync]'
+    default: 'Sync LeetCode submission'
 runs:
   using: 'node16'
   main: 'index.js'

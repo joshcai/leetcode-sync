@@ -67,8 +67,8 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - `leetcode-session` _(required)_: The LeetCode session value for retrieving submissions from LeetCode
 - `filter-duplicate-secs`: Number of seconds after an accepted solution to ignore other accepted solutions for the same problem, default: 86400 (1 day)
 - `destination-folder` _(optional)_: The folder in your repo to save the submissions to (necessary for shared repos), default: _none_
-- `verbose` _(optional)_: Requires an additional API call but adds submission percentiles and question numbers to the repo, default: true
-- `commit-header` _(optional)_: How the automated commits should be prefixed, default: '[LeetCode Sync]'
+- `verbose` _(optional)_: Adds submission percentiles and question numbers to the repo (requires an additional API call), default: true
+- `commit-header` _(optional)_: How the automated commits should be prefixed, default: 'Sync LeetCode submission'
 
 ## Shared Repos
 

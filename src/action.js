@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { Octokit } = require('@octokit/rest');
 
-const COMMIT_MESSAGE = '[LeetCode Sync]';
+const COMMIT_MESSAGE = 'Sync LeetCode submission';
 const LANG_TO_EXTENSION = {
   'bash': 'sh',
   'c': 'c',
@@ -34,6 +34,9 @@ function log(message) {
 }
 
 function pad(n) {
+    if (n.length > 4) {
+        return n;
+    }
     var s = '000' + n;
     return s.substring(s.length-4);
 }
@@ -74,7 +77,7 @@ async function getInfo(submission, session, csrf) {
       const questionId = pad(response.data.data.submissionDetails.question.questionId.toString());
 
       log(`Got info for submission #${submission.id}`);
-      return { runtimeperc: runtimePercentile, memoryperc: memoryPercentile, qid: questionId };
+      return { runtimePerc: runtimePercentile, memoryPerc: memoryPercentile, qid: questionId };
     } catch (exception) {
       if (retryCount >= maxRetries) {
         throw exception;
@@ -114,8 +117,8 @@ async function commit(params) {
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
   const commitName = !!commitHeader ? commitHeader : COMMIT_MESSAGE;
 
-  if ('runtimeperc' in submission) {
-    message = `${commitName} Runtime - ${submission.runtime} (${submission.runtimeperc}), Memory - ${submission.memory} (${submission.memoryperc})`;
+  if ('runtimePerc' in submission) {
+    message = `${commitName} Runtime - ${submission.runtime} (${submission.runtimePerc}), Memory - ${submission.memory} (${submission.memoryPerc})`;
     qid = `${submission.qid}-`;
   } else {
     message = `${commitName} Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
