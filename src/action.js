@@ -33,8 +33,63 @@ function log(message) {
   console.log(`[${new Date().toUTCString()}] ${message}`);
 }
 
+function pad(n) {
+    if (n.length > 4) {
+        return n;
+    }
+    var s = '000' + n;
+    return s.substring(s.length-4);
+}
+
 function normalizeName(problemName) {
-  return problemName.toLowerCase().replace(/\s/g, '_');
+  return problemName.toLowerCase().replace(/\s/g, '-');
+}
+
+async function getInfo(submission, session, csrf) {
+  let data = JSON.stringify({
+    query: `query submissionDetails($submissionId: Int!) {
+      submissionDetails(submissionId: $submissionId) {
+        runtimePercentile
+        memoryPercentile
+        question {
+          questionId
+        }
+      }
+    }`,
+    variables: {'submissionId':submission.id}
+  });
+
+  let config = {
+    maxBodyLength: Infinity,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `LEETCODE_SESSION=${session};csrftoken=${csrf};`,
+    },
+    data : data
+  };
+
+  // No need to break on first request error since that would be done when getting submissions
+  const getInfo = async (maxRetries = 5, retryCount = 0) => {
+    try {
+      const response = await axios.post('https://leetcode.com/graphql/', data, config);
+      const runtimePercentile = `${response.data.data.submissionDetails.runtimePercentile.toFixed(2)}%`;
+      const memoryPercentile = `${response.data.data.submissionDetails.memoryPercentile.toFixed(2)}%`;
+      const questionId = pad(response.data.data.submissionDetails.question.questionId.toString());
+
+      log(`Got info for submission #${submission.id}`);
+      return { runtimePerc: runtimePercentile, memoryPerc: memoryPercentile, qid: questionId };
+    } catch (exception) {
+      if (retryCount >= maxRetries) {
+        throw exception;
+      }
+      log('Error fetching submission info, retrying in ' + 3 ** retryCount + ' seconds...');
+      await delay(3 ** retryCount * 1000);
+      return getInfo(maxRetries, retryCount + 1);
+    }
+  };
+
+  info = await getInfo();
+  return {...submission, ...info};
 }
 
 async function commit(params) {
@@ -48,7 +103,8 @@ async function commit(params) {
     latestCommitSHA,
     submission,
     destinationFolder,
-    question_data
+    commitHeader,
+    questionData
   } = params;
 
   const name = normalizeName(submission.title);
@@ -59,21 +115,29 @@ async function commit(params) {
   }
 
   const prefix = !!destinationFolder ? `${destinationFolder}/` : '';
-  const questionPath = `${prefix}problems/${name}/question.md`; // Markdown file for the problem with question data
-  const solutionPath = `${prefix}problems/${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`; // Separate file for the solution
+  const commitName = !!commitHeader ? commitHeader : COMMIT_MESSAGE;
 
+  if ('runtimePerc' in submission) {
+    message = `${commitName} Runtime - ${submission.runtime} (${submission.runtimePerc}), Memory - ${submission.memory} (${submission.memoryPerc})`;
+    qid = `${submission.qid}-`;
+  } else {
+    message = `${commitName} Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
+    qid = '';
+  }
+  const questionPath = `${prefix}${qid}${name}/README.md`;  // Markdown file for the problem with question data
+  const solutionPath = `${prefix}${qid}${name}/solution.${LANG_TO_EXTENSION[submission.lang]}`;  // Separate file for the solution
 
   const treeData = [
     {
       path: questionPath,
       mode: '100644',
-      content: question_data,
+      content: questionData,
     },
     {
       path: solutionPath,
       mode: '100644',
-      content: submission.code,
-    },
+      content: `${submission.code}\n`,  // Adds newline at EOF to conform to git recommendations
+    }
   ];
 
   const treeResponse = await octokit.git.createTree({
@@ -87,7 +151,7 @@ async function commit(params) {
   const commitResponse = await octokit.git.createCommit({
     owner: owner,
     repo: repo,
-    message: `${COMMIT_MESSAGE} - ${submission.title} (${submission.lang})`,
+    message: message,
     tree: treeResponse.data.sha,
     parents: [latestCommitSHA],
     author: {
@@ -179,10 +243,12 @@ async function sync(inputs) {
     githubToken,
     owner,
     repo,
-    filterDuplicateSecs,
     leetcodeCSRFToken,
     leetcodeSession,
-    destinationFolder
+    filterDuplicateSecs,
+    destinationFolder,
+    verbose,
+    commitHeader
   } = inputs;
 
   const octokit = new Octokit({
@@ -197,7 +263,7 @@ async function sync(inputs) {
   });
 
   let lastTimestamp = 0;
-  // commitInfo is used to get the original name / email to use for the author / committer. 
+  // commitInfo is used to get the original name / email to use for the author / committer.
   // Since we need to modify the commit time, we can't use the default settings for the
   // authenticated user.
   let commitInfo = commits.data[commits.data.length - 1].commit.author;
@@ -240,7 +306,7 @@ async function sync(inputs) {
           throw exception;
         }
         log('Error fetching submissions, retrying in ' + 3 ** retryCount + ' seconds...');
-        // There's a rate limit on LeetCode API, so wait with backoff before retrying. 
+        // There's a rate limit on LeetCode API, so wait with backoff before retrying.
         await delay(3 ** retryCount * 1000);
         return getSubmissions(maxRetries, retryCount + 1);
       }
@@ -249,7 +315,7 @@ async function sync(inputs) {
     // the tokens are configured incorrectly.
     const maxRetries = (response === null) ? 0 : 5;
     if (response !== null) {
-      // Add a 1 second delay before all requests after the initial request. 
+      // Add a 1 second delay before all requests after the initial request.
       await delay(1000);
     }
     response = await getSubmissions(maxRetries);
@@ -275,10 +341,13 @@ async function sync(inputs) {
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
     submission = submissions[i];
-    
+    if (verbose != 'false') {
+      submission = await getInfo(submission, leetcodeSession, leetcodeCSRFToken);
+    }
+
     // Get the question data for the submission.
-    const question_data = await getQuestionData(submission.title_slug, leetcodeSession);
-    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder, question_data });
+    const questionData = await getQuestionData(submission.title_slug, leetcodeSession);
+    [treeSHA, latestCommitSHA] = await commit({ octokit, owner, repo, defaultBranch, commitInfo, treeSHA, latestCommitSHA, submission, destinationFolder, commitHeader, questionData });
   }
   log('Done syncing all submissions.');
 }
