@@ -9,6 +9,7 @@ const LANG_TO_EXTENSION = {
   'csharp': 'cs',
   'dart': 'dart',
   'elixir': 'ex',
+  'erlang': 'erl',
   'golang': 'go',
   'java': 'java',
   'javascript': 'js',
@@ -20,11 +21,12 @@ const LANG_TO_EXTENSION = {
   'python': 'py',
   'python3': 'py',
   'pythondata': 'py',
+  'racket': 'rkt',
   'ruby': 'rb',
   'rust': 'rs',
   'scala': 'scala',
   'swift': 'swift',
-  'typescript': 'ts',
+  'typescript': 'ts', 
 };
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
