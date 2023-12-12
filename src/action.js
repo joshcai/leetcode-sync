@@ -21,6 +21,7 @@ const LANG_TO_EXTENSION = {
   'python': 'py',
   'python3': 'py',
   'pythondata': 'py',
+  'postgresql': 'sql',
   'racket': 'rkt',
   'ruby': 'rb',
   'rust': 'rs',
