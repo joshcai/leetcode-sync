@@ -271,7 +271,7 @@ async function sync(inputs) {
   // authenticated user.
   let commitInfo = commits.data[commits.data.length - 1].commit.author;
   for (const commit of commits.data) {
-    if (!commit.commit.message.startsWith(COMMIT_MESSAGE)) {
+    if (!commit.commit.message.startsWith(!!commitHeader ? commitHeader : COMMIT_MESSAGE)) {
       continue
     }
     commitInfo = commit.commit.author;
