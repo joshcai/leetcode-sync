@@ -31,4 +31,4 @@ inputs:
     default: 'Sync LeetCode submission'
 runs:
   using: 'node20'
-  main: 'index.js'
+  main: 'dist/index.js'
