@@ -4,7 +4,9 @@
   "description": "GitHub Action for syncing LeetCode submissions to a git repository",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index.js test",
+    "package": "ncc build index.js",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -21,9 +23,12 @@
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
     "@octokit/rest": "^19.0.5",
-    "axios": "^0.21.2"
+    "axios": "^1.6.7"
   },
   "devDependencies": {
-    "node": "^16.18.1"
+    "@vercel/ncc": "^0.38.1",
+    "dotenv": "^16.4.2",
+    "husky": "^9.0.10",
+    "node": "^20.11.0"
   }
 }

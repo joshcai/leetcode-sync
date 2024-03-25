@@ -16,19 +16,19 @@ inputs:
   filter-duplicate-secs:
     description: 'Number of seconds after an accepted solution to ignore other accepted solutions for the same problem'
     required: false
-    default: 86400
+    default: '86400'
   destination-folder:
     description: 'The folder to save the synced files in (relative to the top level of your repo)'
     required: false
-    default: null
+    default: '.'
   verbose:
     description: 'Adds submission percentiles and question numbers to the repo (requires an additional API call)'
     required: false
-    default: true
+    default: 'true'
   commit-header:
     description: 'How the automated commits should be prefixed'
     required: false
     default: 'Sync LeetCode submission'
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node20'
+  main: 'dist/index.js'

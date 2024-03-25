@@ -6,7 +6,7 @@ const { context } = require('@actions/github');
 const TEST_MODE = process.argv.includes('test');
 
 async function main() {
-  let githubToken, owner, repo, leetcodeCSFRToken, leetcodeSession;
+  let githubToken, owner, repo, leetcodeCSRFToken, leetcodeSession;
   let filterDuplicateSecs, destinationFolder;
   if (TEST_MODE) {
     if (!config.GITHUB_TOKEN || !config.GITHUB_REPO || !config.LEETCODE_CSRF_TOKEN || !config.LEETCODE_SESSION) {
