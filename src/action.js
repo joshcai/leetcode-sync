@@ -29,6 +29,7 @@ const LANG_TO_EXTENSION = {
   swift: "swift",
   typescript: "ts",
 };
+const BASE_URL = "https://leetcode.com";
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -48,12 +49,23 @@ function normalizeName(problemName) {
   return problemName.toLowerCase().replace(/\s/g, "-");
 }
 
-async function getInfo(submission, session, csrf) {
+function graphqlHeaders(session, csrfToken) {
+  return {
+    "content-type": "application/json",
+    origin: BASE_URL,
+    referer: BASE_URL,
+    cookie: `csrftoken=${csrfToken}; LEETCODE_SESSION=${session};`,
+    "x-csrftoken": csrfToken,
+  };
+}
+
+async function getInfo(submission, session, csrfToken) {
   let data = JSON.stringify({
     query: `query submissionDetails($submissionId: Int!) {
       submissionDetails(submissionId: $submissionId) {
         runtimePercentile
         memoryPercentile
+        code
         question {
           questionId
         }
@@ -62,23 +74,14 @@ async function getInfo(submission, session, csrf) {
     variables: { submissionId: submission.id },
   });
 
-  let config = {
-    maxBodyLength: Infinity,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `LEETCODE_SESSION=${session};csrftoken=${csrf};`,
-    },
-    data: data,
-  };
+  const headers = graphqlHeaders(session, csrfToken);
 
   // No need to break on first request error since that would be done when getting submissions
   const getInfo = async (maxRetries = 5, retryCount = 0) => {
     try {
-      const response = await axios.post(
-        "https://leetcode.com/graphql/",
-        data,
-        config,
-      );
+      const response = await axios.post("https://leetcode.com/graphql/", data, {
+        headers,
+      });
       const runtimePercentile = `${response.data.data.submissionDetails.runtimePercentile.toFixed(
         2,
       )}%`;
@@ -94,6 +97,7 @@ async function getInfo(submission, session, csrf) {
         runtimePerc: runtimePercentile,
         memoryPerc: memoryPercentile,
         qid: questionId,
+        code: response.data.data.submissionDetails.code,
       };
     } catch (exception) {
       if (retryCount >= maxRetries) {
@@ -170,7 +174,7 @@ async function commit(params) {
     tree: treeData,
   });
 
-  const date = new Date(submission.timestamp * 1000).toISOString();
+  const date = new Date(Number(submission.timestamp) * 1000).toISOString();
   const commitResponse = await octokit.git.createCommit({
     owner: owner,
     repo: repo,
@@ -202,14 +206,10 @@ async function commit(params) {
   return [treeResponse.data.sha, commitResponse.data.sha];
 }
 
-async function getQuestionData(titleSlug, leetcodeSession) {
+async function getQuestionData(titleSlug, leetcodeSession, csrfToken) {
   log(`Getting question data for ${titleSlug}...`);
 
-  const headers = {
-    "Content-Type": "application/json",
-    Cookie: `LEETCODE_SESSION=${leetcodeSession};`,
-  };
-
+  const headers = graphqlHeaders(leetcodeSession, csrfToken);
   const graphql = JSON.stringify({
     query: `query getQuestionDetail($titleSlug: String!) {
       question(titleSlug: $titleSlug) {
@@ -242,11 +242,12 @@ function addToSubmissions(params) {
     submissions,
   } = params;
 
-  for (const submission of response.data.submissions_dump) {
-    if (submission.timestamp <= lastTimestamp) {
+  for (const submission of response.data.data.submissionList.submissions) {
+    submissionTimestamp = Number(submission.timestamp);
+    if (submissionTimestamp <= lastTimestamp) {
       return false;
     }
-    if (submission.status_display !== "Accepted") {
+    if (submission.statusDisplay !== "Accepted") {
       continue;
     }
     const name = normalizeName(submission.title);
@@ -257,11 +258,11 @@ function addToSubmissions(params) {
     // Filter out other accepted solutions less than one day from the most recent one.
     if (
       submissions_dict[name][lang] &&
-      submissions_dict[name][lang] - submission.timestamp < filterDuplicateSecs
+      submissions_dict[name][lang] - submissionTimestamp < filterDuplicateSecs
     ) {
       continue;
     }
-    submissions_dict[name][lang] = submission.timestamp;
+    submissions_dict[name][lang] = submissionTimestamp;
     submissions.push(submission);
   }
   return true;
@@ -315,25 +316,39 @@ async function sync(inputs) {
   const submissions = [];
   const submissions_dict = {};
   do {
-    const config = {
-      params: {
-        offset: offset,
-        limit: 20,
-        lastkey: response === null ? "" : response.data.last_key,
-      },
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": leetcodeCSRFToken,
-        Cookie: `csrftoken=${leetcodeCSRFToken};LEETCODE_SESSION=${leetcodeSession};`,
-      },
-    };
     log(`Getting submission from LeetCode, offset ${offset}`);
 
     const getSubmissions = async (maxRetries, retryCount = 0) => {
       try {
-        const response = await axios.get(
-          "https://leetcode.com/api/submissions/",
-          config,
+        const slug = undefined;
+        const graphql = JSON.stringify({
+          query: `query ($offset: Int!, $limit: Int!, $slug: String) {
+              submissionList(offset: $offset, limit: $limit, questionSlug: $slug) {
+                  hasNext
+                  submissions {
+                      id
+                      lang
+                      timestamp
+                      statusDisplay
+                      runtime
+                      title
+                      memory
+                      titleSlug
+                  }
+              }
+          }`,
+          variables: {
+            offset: offset,
+            limit: 20,
+            slug,
+          },
+        });
+
+        const headers = graphqlHeaders(leetcodeSession, leetcodeCSRFToken);
+        const response = await axios.post(
+          "https://leetcode.com/graphql/",
+          graphql,
+          { headers },
         );
         log(`Successfully fetched submission from LeetCode, offset ${offset}`);
         return response;
@@ -388,19 +403,17 @@ async function sync(inputs) {
   let latestCommitSHA = commits.data[0].sha;
   let treeSHA = commits.data[0].commit.tree.sha;
   for (i = submissions.length - 1; i >= 0; i--) {
-    submission = submissions[i];
-    if (verbose != "false") {
-      submission = await getInfo(
-        submission,
-        leetcodeSession,
-        leetcodeCSRFToken,
-      );
-    }
+    submission = await getInfo(
+      submissions[i],
+      leetcodeSession,
+      leetcodeCSRFToken,
+    );
 
     // Get the question data for the submission.
     const questionData = await getQuestionData(
-      submission.title_slug,
+      submission.titleSlug,
       leetcodeSession,
+      leetcodeCSRFToken,
     );
     [treeSHA, latestCommitSHA] = await commit({
       octokit,
