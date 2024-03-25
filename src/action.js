@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { Octokit } = require("@octokit/rest");
+const path = require("path");
 
 const COMMIT_MESSAGE = "Sync LeetCode submission";
 const LANG_TO_EXTENSION = {
@@ -46,7 +47,10 @@ function pad(n) {
 }
 
 function normalizeName(problemName) {
-  return problemName.toLowerCase().replace(/\s/g, "-");
+  return problemName
+    .toLowerCase()
+    .replace(/\s/g, "-")
+    .replace(/[^a-zA-Z0-9_-]/gi, "");
 }
 
 function graphqlHeaders(session, csrfToken) {
@@ -139,7 +143,7 @@ async function commit(params) {
     throw `Language ${submission.lang} does not have a registered extension.`;
   }
 
-  const prefix = !!destinationFolder ? `${destinationFolder}/` : "";
+  const prefix = !!destinationFolder ? destinationFolder : "";
   const commitName = !!commitHeader ? commitHeader : COMMIT_MESSAGE;
 
   if ("runtimePerc" in submission) {
@@ -149,19 +153,22 @@ async function commit(params) {
     message = `${commitName} Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
     qid = "";
   }
-  const questionPath = `${prefix}${qid}${name}/README.md`; // Markdown file for the problem with question data
-  const solutionPath = `${prefix}${qid}${name}/solution.${
-    LANG_TO_EXTENSION[submission.lang]
-  }`; // Separate file for the solution
+  const folderName = `${qid}${name}`;
+  // Markdown file for the problem with question data
+  const questionPath = path.join(prefix, folderName, "README.md");
+
+  // Separate file for the solution
+  const solutionFileName = `solution.${LANG_TO_EXTENSION[submission.lang]}`;
+  const solutionPath = path.join(prefix, folderName, solutionFileName);
 
   const treeData = [
     {
-      path: questionPath,
+      path: path.normalize(questionPath),
       mode: "100644",
       content: questionData,
     },
     {
-      path: solutionPath,
+      path: path.normalize(solutionPath),
       mode: "100644",
       content: `${submission.code}\n`, // Adds newline at EOF to conform to git recommendations
     },
@@ -387,7 +394,7 @@ async function sync(inputs) {
     }
 
     offset += 20;
-  } while (response.data.has_next);
+  } while (response.data.data.submissionList.hasNext);
 
   // We have all submissions we want to write to GitHub now.
   // First, get the default branch to write to.
