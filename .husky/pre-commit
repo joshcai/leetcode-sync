@@ -1,2 +1,2 @@
 npm run package
-git add .
+git add dist/index.js
