@@ -111,3 +111,17 @@ Special thanks to the following people who helped beta test this GitHub Action a
 - [uakfdotb](https://github.com/uakfdotb)
 - [hexecute](https://github.com/hexecute)
 - [JonathanZhu11](https://github.com/JonathanZhu11)
+
+## Updated by [Aly Ghallab](https://github.com/AlyHG) to Handle Locked LeetCode Premium Problems and Improve Sync Reliability - June 19, 2024
+
+- **Error Handling for Locked Problems:** Added error handling in the `getInfo` function to skip locked problems. When the function encounters a locked problem (HTTP 403 error), it logs a message and skips the problem instead of retrying or throwing an exception.
+- **Fetching Question Data:** Updated the `getQuestionData` function to handle errors when fetching question data for locked problems. If fetching the question data results in a locked problem error (HTTP 403), it logs the error and returns null to indicate that the problem should be skipped.
+- **Sync Function Modification:** Modified the `sync` function to continue syncing other problems even if some are locked, ensuring that locked problems do not cause the entire sync process to fail.
+- **Additional Logging:** Added logging to help identify and skip locked problems during the sync process.
+
+
+These changes improve the sync process by handling scenarios where some LeetCode problems are locked, allowing the action to continue syncing all available, unlocked problems successfully.
+
+
+
+  
