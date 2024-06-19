@@ -104,7 +104,12 @@ async function getInfo(submission, session, csrfToken) {
         code: response.data.data.submissionDetails.code,
       };
     } catch (exception) {
-      if (retryCount >= maxRetries) {
+      if (retryCount >= maxRetries) {     
+        // If problem is locked due to user not having LeetCode Premium
+        if (exception.response && exception.response.status === 403) {
+          log(`Skipping locked problem: ${submission.title}`);
+          return null; 
+        }
         throw exception;
       }
       log(
@@ -235,6 +240,11 @@ async function getQuestionData(titleSlug, leetcodeSession, csrfToken) {
     const result = await response.data;
     return result.data.question.content;
   } catch (error) {
+    // If problem is locked due to user not having LeetCode Premium
+    if (error.response && error.response.status === 403) {
+      log(`Skipping locked problem: ${titleSlug}`);
+      return null; 
+    }
     console.log("error", error);
   }
 }
@@ -415,6 +425,11 @@ async function sync(inputs) {
       leetcodeSession,
       leetcodeCSRFToken,
     );
+    if (!submission) {
+      // Skip this submission if it is null (locked problem)
+      continue;
+    }
+
 
     // Get the question data for the submission.
     const questionData = await getQuestionData(
@@ -422,6 +437,10 @@ async function sync(inputs) {
       leetcodeSession,
       leetcodeCSRFToken,
     );
+    if (questionData === null) {
+      // Skip this submission if question data is null (locked problem)
+      continue;
+    }
     [treeSHA, latestCommitSHA] = await commit({
       octokit,
       owner,
