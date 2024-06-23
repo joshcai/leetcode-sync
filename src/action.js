@@ -90,15 +90,17 @@ async function getInfo(submission, session, csrfToken) {
       console.log('submissionDetails: ',submissionDetails);
 
       const runtimePercentile =
-        submissionDetails?.runtimePercentile !== null &&
-        submissionDetails?.runtimePercentile !== undefined
-          ? `${submissionDetails.runtimePercentile.toFixed(2)}%`
+        submissionDetails &&
+        submissionDetails.runtimePercentile !== null &&
+        submissionDetails.runtimePercentile !== undefined
+          ? `${submissionDetails.runtimePercentile}%`
           : "N/A";
 
       const memoryPercentile =
-        submissionDetails?.memoryPercentile !== null &&
-        submissionDetails?.memoryPercentile !== undefined
-          ? `${submissionDetails.memoryPercentile.toFixed(2)}%`
+        submissionDetails &&
+        submissionDetails.memoryPercentile !== null &&
+        submissionDetails.memoryPercentile !== undefined
+          ? `${submissionDetails.memoryPercentile}%`
           : "N/A";
 
       console.log(runtimePercentile, memoryPercentile);
