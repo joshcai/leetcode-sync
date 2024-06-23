@@ -87,23 +87,18 @@ async function getInfo(submission, session, csrfToken) {
         headers,
       });
       const submissionDetails = response.data?.data?.submissionDetails;
-      console.log('submissionDetails: ',submissionDetails);
 
       const runtimePercentile =
-        submissionDetails &&
         submissionDetails.runtimePercentile !== null &&
         submissionDetails.runtimePercentile !== undefined
-          ? `${submissionDetails.runtimePercentile}%`
+          ? `${submissionDetails.runtimePercentile.toFixed(2)}%`
           : "N/A";
 
       const memoryPercentile =
-        submissionDetails &&
         submissionDetails.memoryPercentile !== null &&
         submissionDetails.memoryPercentile !== undefined
-          ? `${submissionDetails.memoryPercentile}%`
+          ? `${submissionDetails.memoryPercentile.toFixed(2)}%`
           : "N/A";
-
-      console.log(runtimePercentile, memoryPercentile);
 
       const questionId = submissionDetails?.question?.questionId
         ? pad(submissionDetails.question.questionId.toString())
