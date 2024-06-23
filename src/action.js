@@ -301,7 +301,7 @@ async function sync(inputs) {
 
   const octokit = new Octokit({
     auth: githubToken,
-    userAgent: "LeetCode sync to GitHub - GitHub Action",
+    userAgent: "LeetCode syncs to GitHub - GitHub Action",
   });
   // First, get the time the timestamp for when the syncer last ran.
   const commits = await octokit.repos.listCommits({
