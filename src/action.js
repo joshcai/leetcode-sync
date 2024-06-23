@@ -86,26 +86,26 @@ async function getInfo(submission, session, csrfToken) {
       const response = await axios.post("https://leetcode.com/graphql/", data, {
         headers,
       });
+      const submissionDetails = response.data?.data?.submissionDetails;
+      console.log('submissionDetails: ',submissionDetails);
+
       const runtimePercentile =
-        response.data.data.submissionDetails.runtimePercentile !== null &&
-        response.data.data.submissionDetails.runtimePercentile !== undefined
-          ? `${response.data.data.submissionDetails.runtimePercentile.toFixed(
-              2
-            )}%`
+        submissionDetails?.runtimePercentile !== null &&
+        submissionDetails?.runtimePercentile !== undefined
+          ? `${submissionDetails.runtimePercentile.toFixed(2)}%`
           : "N/A";
 
       const memoryPercentile =
-        response.data.data.submissionDetails.memoryPercentile !== null &&
-        response.data.data.submissionDetails.memoryPercentile !== undefined
-          ? `${response.data.data.submissionDetails.memoryPercentile.toFixed(
-              2
-            )}%`
+        submissionDetails?.memoryPercentile !== null &&
+        submissionDetails?.memoryPercentile !== undefined
+          ? `${submissionDetails.memoryPercentile.toFixed(2)}%`
           : "N/A";
 
-      console.log(runtimePercentile, memoryPercentile)
-      const questionId = pad(
-        response.data.data.submissionDetails.question.questionId.toString(),
-      );
+      console.log(runtimePercentile, memoryPercentile);
+
+      const questionId = submissionDetails?.question?.questionId
+        ? pad(submissionDetails.question.questionId.toString())
+        : "N/A";
 
       log(`Got info for submission #${submission.id}`);
       return {
