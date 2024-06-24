@@ -1,4 +1,4 @@
-name: 'LeetCode Syncv1.1'
+name: 'LeetCode Sync'
 description: 'Sync LeetCode submissions to GitHub'
 branding:
   icon: git-commit
