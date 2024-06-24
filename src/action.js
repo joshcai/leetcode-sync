@@ -87,13 +87,13 @@ async function getInfo(submission, session, csrfToken) {
         headers,
       });
       const runtimePercentile = `${response.data.data.submissionDetails.runtimePercentile.toFixed(
-        2,
+        2
       )}%`;
       const memoryPercentile = `${response.data.data.submissionDetails.memoryPercentile.toFixed(
-        2,
+        2
       )}%`;
       const questionId = pad(
-        response.data.data.submissionDetails.question.questionId.toString(),
+        response.data.data.submissionDetails.question.questionId.toString()
       );
 
       log(`Got info for submission #${submission.id}`);
@@ -104,18 +104,18 @@ async function getInfo(submission, session, csrfToken) {
         code: response.data.data.submissionDetails.code,
       };
     } catch (exception) {
-      if (retryCount >= maxRetries) {     
+      if (retryCount >= maxRetries) {
         // If problem is locked due to user not having LeetCode Premium
         if (exception.response && exception.response.status === 403) {
           log(`Skipping locked problem: ${submission.title}`);
-          return null; 
+          return null;
         }
         throw exception;
       }
       log(
         "Error fetching submission info, retrying in " +
           3 ** retryCount +
-          " seconds...",
+          " seconds..."
       );
       await delay(3 ** retryCount * 1000);
       return getInfo(maxRetries, retryCount + 1);
@@ -235,7 +235,7 @@ async function getQuestionData(titleSlug, leetcodeSession, csrfToken) {
     const response = await axios.post(
       "https://leetcode.com/graphql/",
       graphql,
-      { headers },
+      { headers }
     );
     const result = await response.data;
     return result.data.question.content;
@@ -243,7 +243,7 @@ async function getQuestionData(titleSlug, leetcodeSession, csrfToken) {
     // If problem is locked due to user not having LeetCode Premium
     if (error.response && error.response.status === 403) {
       log(`Skipping locked problem: ${titleSlug}`);
-      return null; 
+      return null;
     }
     console.log("error", error);
   }
@@ -317,7 +317,7 @@ async function sync(inputs) {
   for (const commit of commits.data) {
     if (
       !commit.commit.message.startsWith(
-        !!commitHeader ? commitHeader : COMMIT_MESSAGE,
+        !!commitHeader ? commitHeader : COMMIT_MESSAGE
       )
     ) {
       continue;
@@ -365,7 +365,7 @@ async function sync(inputs) {
         const response = await axios.post(
           "https://leetcode.com/graphql/",
           graphql,
-          { headers },
+          { headers }
         );
         log(`Successfully fetched submission from LeetCode, offset ${offset}`);
         return response;
@@ -376,7 +376,7 @@ async function sync(inputs) {
         log(
           "Error fetching submissions, retrying in " +
             3 ** retryCount +
-            " seconds...",
+            " seconds..."
         );
         // There's a rate limit on LeetCode API, so wait with backoff before retrying.
         await delay(3 ** retryCount * 1000);
@@ -423,19 +423,19 @@ async function sync(inputs) {
     submission = await getInfo(
       submissions[i],
       leetcodeSession,
-      leetcodeCSRFToken,
+      leetcodeCSRFToken
     );
-    if (!submission) {
+
+    if (submission === null) {
       // Skip this submission if it is null (locked problem)
       continue;
     }
-
 
     // Get the question data for the submission.
     const questionData = await getQuestionData(
       submission.titleSlug,
       leetcodeSession,
-      leetcodeCSRFToken,
+      leetcodeCSRFToken
     );
     if (questionData === null) {
       // Skip this submission if question data is null (locked problem)

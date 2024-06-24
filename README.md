@@ -48,14 +48,14 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 
        steps:
          - name: Sync
-           uses: AlyHG/leetcode-sync@master
+           uses: joshcai/leetcode-sync@v1.6
            with:
              github-token: ${{ github.token }}
              leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
              leetcode-session: ${{ secrets.LEETCODE_SESSION }}
              destination-folder: my-folder
              verbose: true
-             commit-header: '[LeetCode Sync]'
+             commit-header: "[LeetCode Sync]"
    ```
 
 6. After you've submitted a LeetCode solution, run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
@@ -101,6 +101,7 @@ Since this file is in the `.gitignore` file to avoid users accidentally committi
 This likely means that you hit a rate limit when committing to GitHub (this may happen if you have over ~300 submissions initially). Since the syncer writes in reverse chronological order, it should pick up syncing submissions from where it left off on the next run of the workflow, so just retry the workflow manually after some time.
 
 #### Job fails with "HttpError: Resource not accessible by integration"
+
 This means the github token you're using does not have permission to write to your repo. If you're using the default `github.token` method follow the instructions [here] (https://docs.github.com/en/actions/security-guides/automatic-token-authentication)
 
 ## Acknowledgements
@@ -111,17 +112,3 @@ Special thanks to the following people who helped beta test this GitHub Action a
 - [uakfdotb](https://github.com/uakfdotb)
 - [hexecute](https://github.com/hexecute)
 - [JonathanZhu11](https://github.com/JonathanZhu11)
-
-## Updated by [Aly Ghallab](https://github.com/AlyHG) to Handle Locked LeetCode Premium Problems and Improve Sync Reliability - June 19, 2024
-
-- **Error Handling for Locked Problems:** Added error handling in the `getInfo` function to skip locked problems. When the function encounters a locked problem (HTTP 403 error), it logs a message and skips the problem instead of retrying or throwing an exception.
-- **Fetching Question Data:** Updated the `getQuestionData` function to handle errors when fetching question data for locked problems. If fetching the question data results in a locked problem error (HTTP 403), it logs the error and returns null to indicate that the problem should be skipped.
-- **Sync Function Modification:** Modified the `sync` function to continue syncing other problems even if some are locked, ensuring that locked problems do not cause the entire sync process to fail.
-- **Additional Logging:** Added logging to help identify and skip locked problems during the sync process.
-
-
-These changes improve the sync process by handling scenarios where some LeetCode problems are locked, allowing the action to continue syncing all available, unlocked problems successfully.
-
-
-
-  
