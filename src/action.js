@@ -86,15 +86,23 @@ async function getInfo(submission, session, csrfToken) {
       const response = await axios.post("https://leetcode.com/graphql/", data, {
         headers,
       });
-      const runtimePercentile = `${response.data.data.submissionDetails.runtimePercentile.toFixed(
-        2
-      )}%`;
-      const memoryPercentile = `${response.data.data.submissionDetails.memoryPercentile.toFixed(
-        2
-      )}%`;
-      const questionId = pad(
-        response.data.data.submissionDetails.question.questionId.toString()
-      );
+      const submissionDetails = response.data?.data?.submissionDetails;
+
+      const runtimePercentile =
+        submissionDetails.runtimePercentile !== null &&
+        submissionDetails.runtimePercentile !== undefined
+          ? `${submissionDetails.runtimePercentile.toFixed(2)}%`
+          : "N/A";
+
+      const memoryPercentile =
+        submissionDetails.memoryPercentile !== null &&
+        submissionDetails.memoryPercentile !== undefined
+          ? `${submissionDetails.memoryPercentile.toFixed(2)}%`
+          : "N/A";
+
+      const questionId = submissionDetails?.question?.questionId
+        ? pad(submissionDetails.question.questionId.toString())
+        : "N/A";
 
       log(`Got info for submission #${submission.id}`);
       return {
