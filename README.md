@@ -55,7 +55,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
              leetcode-session: ${{ secrets.LEETCODE_SESSION }}
              destination-folder: my-folder
              verbose: true
-             commit-header: '[LeetCode Sync]'
+             commit-header: "[LeetCode Sync]"
    ```
 
 6. After you've submitted a LeetCode solution, run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
@@ -101,6 +101,7 @@ Since this file is in the `.gitignore` file to avoid users accidentally committi
 This likely means that you hit a rate limit when committing to GitHub (this may happen if you have over ~300 submissions initially). Since the syncer writes in reverse chronological order, it should pick up syncing submissions from where it left off on the next run of the workflow, so just retry the workflow manually after some time.
 
 #### Job fails with "HttpError: Resource not accessible by integration"
+
 This means the github token you're using does not have permission to write to your repo. If you're using the default `github.token` method follow the instructions [here] (https://docs.github.com/en/actions/security-guides/automatic-token-authentication)
 
 ## Acknowledgements

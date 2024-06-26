@@ -113,12 +113,17 @@ async function getInfo(submission, session, csrfToken) {
       };
     } catch (exception) {
       if (retryCount >= maxRetries) {
+        // If problem is locked due to user not having LeetCode Premium
+        if (exception.response && exception.response.status === 403) {
+          log(`Skipping locked problem: ${submission.title}`);
+          return null;
+        }
         throw exception;
       }
       log(
         "Error fetching submission info, retrying in " +
           3 ** retryCount +
-          " seconds...",
+          " seconds..."
       );
       await delay(3 ** retryCount * 1000);
       return getInfo(maxRetries, retryCount + 1);
@@ -238,11 +243,16 @@ async function getQuestionData(titleSlug, leetcodeSession, csrfToken) {
     const response = await axios.post(
       "https://leetcode.com/graphql/",
       graphql,
-      { headers },
+      { headers }
     );
     const result = await response.data;
     return result.data.question.content;
   } catch (error) {
+    // If problem is locked due to user not having LeetCode Premium
+    if (error.response && error.response.status === 403) {
+      log(`Skipping locked problem: ${titleSlug}`);
+      return null;
+    }
     console.log("error", error);
   }
 }
@@ -315,7 +325,7 @@ async function sync(inputs) {
   for (const commit of commits.data) {
     if (
       !commit.commit.message.startsWith(
-        !!commitHeader ? commitHeader : COMMIT_MESSAGE,
+        !!commitHeader ? commitHeader : COMMIT_MESSAGE
       )
     ) {
       continue;
@@ -363,7 +373,7 @@ async function sync(inputs) {
         const response = await axios.post(
           "https://leetcode.com/graphql/",
           graphql,
-          { headers },
+          { headers }
         );
         log(`Successfully fetched submission from LeetCode, offset ${offset}`);
         return response;
@@ -374,7 +384,7 @@ async function sync(inputs) {
         log(
           "Error fetching submissions, retrying in " +
             3 ** retryCount +
-            " seconds...",
+            " seconds..."
         );
         // There's a rate limit on LeetCode API, so wait with backoff before retrying.
         await delay(3 ** retryCount * 1000);
@@ -421,15 +431,24 @@ async function sync(inputs) {
     submission = await getInfo(
       submissions[i],
       leetcodeSession,
-      leetcodeCSRFToken,
+      leetcodeCSRFToken
     );
+
+    if (submission === null) {
+      // Skip this submission if it is null (locked problem)
+      continue;
+    }
 
     // Get the question data for the submission.
     const questionData = await getQuestionData(
       submission.titleSlug,
       leetcodeSession,
-      leetcodeCSRFToken,
+      leetcodeCSRFToken
     );
+    if (questionData === null) {
+      // Skip this submission if question data is null (locked problem)
+      continue;
+    }
     [treeSHA, latestCommitSHA] = await commit({
       octokit,
       owner,
