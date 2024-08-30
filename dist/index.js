@@ -14649,10 +14649,10 @@ async function commit(params) {
   const commitName = !!commitHeader ? commitHeader : COMMIT_MESSAGE;
 
   if ("runtimePerc" in submission) {
-    message = `${commitName} Runtime - ${submission.runtime} (${submission.runtimePerc}), Memory - ${submission.memory} (${submission.memoryPerc})`;
+    message = `${commitName} - ${submission.title} - Runtime - ${submission.runtime} (${submission.runtimePerc}), Memory - ${submission.memory} (${submission.memoryPerc})`;
     qid = `${submission.qid}-`;
   } else {
-    message = `${commitName} Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
+    message = `${commitName} - ${submission.title} - Runtime - ${submission.runtime}, Memory - ${submission.memory}`;
     qid = "";
   }
   const folderName = `${qid}${name}`;
