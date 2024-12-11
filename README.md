@@ -21,16 +21,21 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
    - Look for a network request to https://leetcode.com.
    - Look under `Request Headers` for the `cookie:` attribute to find the values.
 
-2. Create a new GitHub repository to host the LeetCode submissions.
+    (or)
+   - After logging in, right-click on the page and press `Inspect`.
+   - Go to `Application Tab > Storage > Cookies`
+   - Look for `http://leetcode.com` and get `cfsrtoken` and `SESSION_TOKEN`
+
+3. Create a new GitHub repository to host the LeetCode submissions.
 
    - It can be either private or public.
 
-3. Add the values from step 1 as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository),
+4. Add the values from step 1 as [GitHub secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository),
    e.g. `LEETCODE_CSRF_TOKEN` and `LEETCODE_SESSION`.
 
-4. Go to REPO > settings > actions and in Workflow Permissions section give actions Read and Write permissions.
+5. Go to `REPO Settings > Actions`. In Workflow Permissions section, give actions Read and Write permissions.
 
-5. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`.
+6. Add a workflow file with this action under the `.github/workflows` directory, e.g. `sync_leetcode.yml`.
 
    Example workflow file:
 
@@ -58,6 +63,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
              commit-header: "[LeetCode Sync]"
    ```
 
+7. Go to your repository's `Settings` tab, and in the left sidebar, click  Actions, then click General. Under `Workflow permissions`, change to `Read and Write permissions`
 6. After you've submitted a LeetCode solution, run the workflow by going to the `Actions` tab, clicking the action name, e.g. `Sync Leetcode`, and then clicking `Run workflow`. The workflow will also automatically run once a week by default (can be configured via the `cron` parameter).
 
 ## Inputs
