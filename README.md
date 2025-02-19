@@ -104,6 +104,10 @@ This likely means that you hit a rate limit when committing to GitHub (this may 
 
 This means the github token you're using does not have permission to write to your repo. If you're using the default `github.token` method follow the instructions [here] (https://docs.github.com/en/actions/security-guides/automatic-token-authentication)
 
+#### Job fails with "TypeError: response.data.data.submissionList.submissions is not iterable"
+
+This means your `LEETCODE_SESSION` cookie value has expired. Refer to [How to use](#how-to-use) to get its new value and update your GitHub Secret accordingly.
+
 ## Acknowledgements
 
 Special thanks to the following people who helped beta test this GitHub Action and gave feedback on improving it:
