@@ -32,7 +32,7 @@ const LANG_TO_EXTENSION = {
 };
 const BASE_URL = "https://leetcode.com";
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 function log(message) {
   console.log(`[${new Date().toUTCString()}] ${message}`);
@@ -267,6 +267,13 @@ function addToSubmissions(params) {
     submissions,
   } = params;
 
+  if (!response?.data?.data?.submissionList?.submissions) {
+    throw new Error(
+      "No LeetCode submissions found. This may be caused by an expired session. " +
+        "Please check if your LEETCODE_SESSION environment variable is valid and up to date."
+    );
+  }
+
   for (const submission of response.data.data.submissionList.submissions) {
     submissionTimestamp = Number(submission.timestamp);
     if (submissionTimestamp <= lastTimestamp) {
@@ -375,6 +382,7 @@ async function sync(inputs) {
           graphql,
           { headers }
         );
+
         log(`Successfully fetched submission from LeetCode, offset ${offset}`);
         return response;
       } catch (exception) {
