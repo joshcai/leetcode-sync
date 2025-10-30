@@ -213,14 +213,6 @@ async function commit(params) {
     },
   });
 
-  await octokit.git.updateRef({
-    owner: owner,
-    repo: repo,
-    sha: commitResponse.data.sha,
-    ref: "heads/" + defaultBranch,
-    force: true,
-  });
-
   log(`Committed solution for ${name}`);
 
   return [treeResponse.data.sha, commitResponse.data.sha];
@@ -461,6 +453,18 @@ async function sync(inputs) {
       destinationFolder,
       commitHeader,
       questionData,
+    });
+
+    if (i != 0) {
+      continue;
+    }
+
+    await octokit.git.updateRef({
+      owner: owner,
+      repo: repo,
+      sha: latestCommitSHA,
+      ref: "heads/" + defaultBranch,
+      force: true,
     });
   }
   log("Done syncing all submissions.");
