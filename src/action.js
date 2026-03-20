@@ -266,7 +266,7 @@ function addToSubmissions(params) {
     submissions_dict,
     submissions,
   } = params;
-
+  const submissions = response.data?.data?.submissionList?.submissions ?? [];
   for (const submission of response.data.data.submissionList.submissions) {
     submissionTimestamp = Number(submission.timestamp);
     if (submissionTimestamp <= lastTimestamp) {
