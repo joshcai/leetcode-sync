@@ -72,6 +72,7 @@ async function getInfo(submission, session, csrfToken) {
         code
         question {
           questionId
+          questionFrontendId
         }
       }
     }`,
@@ -100,9 +101,13 @@ async function getInfo(submission, session, csrfToken) {
           ? `${submissionDetails.memoryPercentile.toFixed(2)}%`
           : "N/A";
 
-      const questionId = submissionDetails?.question?.questionId
-        ? pad(submissionDetails.question.questionId.toString())
-        : "N/A";
+      const rawId =
+              submissionDetails?.question?.questionFrontendId ||
+              submissionDetails?.question?.questionId;
+
+      const questionId = rawId
+            ? pad(rawId.toString())
+            : "N/A";
 
       log(`Got info for submission #${submission.id}`);
       return {
