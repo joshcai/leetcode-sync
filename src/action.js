@@ -1,6 +1,7 @@
 const axios = require("axios");
 const { Octokit } = require("@octokit/rest");
 const path = require("path");
+const { syncProjects } = require("./projects");
 
 const COMMIT_MESSAGE = "Sync LeetCode submission";
 const LANG_TO_EXTENSION = {
@@ -293,6 +294,35 @@ function addToSubmissions(params) {
   return true;
 }
 
+// Read a JSON state file from the repo, returning {} if it doesn't exist yet.
+// Used to track which project submissions have already been synced.
+async function readJsonState(octokit, owner, repo, filePath) {
+  try {
+    const res = await octokit.repos.getContent({
+      owner,
+      repo,
+      path: filePath,
+    });
+    const content = Buffer.from(res.data.content, "base64").toString("utf8");
+    return { data: JSON.parse(content), sha: res.data.sha };
+  } catch (error) {
+    return { data: {}, sha: undefined };
+  }
+}
+
+async function writeJsonState(octokit, owner, repo, filePath, data, sha, message) {
+  await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path: filePath,
+    message,
+    content: Buffer.from(JSON.stringify(data, null, 2) + "\n", "utf8").toString(
+      "base64"
+    ),
+    ...(sha ? { sha } : {}),
+  });
+}
+
 async function sync(inputs) {
   const {
     githubToken,
@@ -304,6 +334,7 @@ async function sync(inputs) {
     destinationFolder,
     verbose,
     commitHeader,
+    syncProjectsEnabled,
   } = inputs;
 
   const octokit = new Octokit({
@@ -464,6 +495,47 @@ async function sync(inputs) {
     });
   }
   log("Done syncing all submissions.");
+
+  // Optionally sync LeetCode Projects (leetcode.com/project) submissions.
+  if (syncProjectsEnabled === true || syncProjectsEnabled === "true") {
+    log("Syncing LeetCode Projects...");
+    // Treat "." / "./" (the action.yml default) as "repo root".
+    const normalizedDest =
+      !destinationFolder || destinationFolder === "." || destinationFolder === "./"
+        ? ""
+        : destinationFolder;
+    const stateFile = normalizedDest
+      ? path.posix.join(normalizedDest, "projects_synced.json")
+      : "projects_synced.json";
+    const { data: projectState, sha: stateSha } = await readJsonState(
+      octokit,
+      owner,
+      repo,
+      stateFile
+    );
+    const changed = await syncProjects({
+      octokit,
+      owner,
+      repo,
+      leetcodeSession,
+      leetcodeCSRFToken,
+      synced: projectState,
+      destinationFolder: normalizedDest,
+      all: true,
+    });
+    if (changed > 0) {
+      await writeJsonState(
+        octokit,
+        owner,
+        repo,
+        stateFile,
+        projectState,
+        stateSha,
+        `${commitHeader ? commitHeader : COMMIT_MESSAGE} - project sync state`
+      );
+    }
+    log(`Done syncing ${changed} project(s).`);
+  }
 }
 
 module.exports = { log, sync };

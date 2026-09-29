@@ -29,6 +29,10 @@ inputs:
     description: 'How the automated commits should be prefixed'
     required: false
     default: 'Sync LeetCode submission'
+  sync-projects:
+    description: 'Also sync LeetCode Projects (leetcode.com/project) submissions into a projects/ folder'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'dist/index.js'

@@ -1,0 +1,52 @@
+name: Build dist
+
+# Rebuilds the bundled action (dist/index.js) on a clean CI runner and verifies
+# that the committed bundle is up to date with src/. This lets contributors
+# avoid building dist/ locally: push the source change and let CI produce and
+# validate the bundle.
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - "src/**"
+      - "index.js"
+      - "action.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/build-dist.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "index.js"
+      - "action.yml"
+      - "package.json"
+      - "package-lock.json"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Skip lifecycle scripts (e.g. husky) that aren't needed in CI.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build dist
+        run: npx ncc build index.js
+
+      - name: Verify dist is up to date
+        run: |
+          if [ -n "$(git status --porcelain dist)" ]; then
+            echo "::error::dist/ is out of date. Run 'npm run package' and commit the result."
+            git --no-pager diff -- dist
+            exit 1
+          fi
+          echo "dist/ is up to date."

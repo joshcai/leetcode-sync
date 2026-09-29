@@ -11,6 +11,7 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - Syncs accepted solutions from LeetCode to the default branch of the GitHub repo
 - Only syncs solutions that have not been synced before
 - Uploads the latest accepted solution for a single problem if there are multiple submissions per day
+- Optionally syncs [LeetCode Projects](https://leetcode.com/project/) submissions using the same folder layout as problems (see [LeetCode Projects](#leetcode-projects))
 
 ## How to use
 
@@ -69,10 +70,38 @@ GitHub Action for automatically syncing LeetCode submissions to a GitHub reposit
 - `destination-folder` _(optional)_: The folder in your repo to save the submissions to (necessary for shared repos), default: _none_
 - `verbose` _(optional)_: Adds submission percentiles and question numbers to the repo (requires an additional API call), default: true
 - `commit-header` _(optional)_: How the automated commits should be prefixed, default: 'Sync LeetCode submission'
+- `sync-projects` _(optional)_: Also sync [LeetCode Projects](https://leetcode.com/project/) submissions, using the same folder layout as problems, default: 'false'
 
 ## Shared Repos
 
 Problems can be routed to a specific folder within a single repo using the `destination-folder` input field. This is useful for users who want to share a repo to add a more social, collaborative, or competitive aspect to their LeetCode sync repo.
+
+## LeetCode Projects
+
+[LeetCode Projects](https://leetcode.com/project/) are multi-file, system-design style problems that are graded with an automated report rather than a single solution snippet. Setting the `sync-projects` input to `true` syncs your successful project submissions alongside your regular problem solutions.
+
+Projects use the same folder layout as regular problems: each project gets its own folder alongside your problem folders (under your `destination-folder`, if set), named `project-<slug>` (e.g. `project-rate-limiter`), containing the submission files plus a `README.md`.
+
+For each project with a successful submission and an available report, the syncer:
+
+- Creates a folder `project-<slug>/` (e.g. `project-rate-limiter`), at the same level as problem folders.
+- Writes every file from the latest successful submission into that folder.
+- Adds a `README.md` with the project title, difficulty, a link to the project, test results, the problem description, and any completed review sections. If the submission itself already contains a `README.md`, the generated one is written as `LEETCODE.md` instead so your file is not overwritten.
+- Only the newest successful submission per project is kept; the folder mirrors that submission, so files removed between submissions are deleted.
+
+Sync state for projects is tracked in a `projects_synced.json` file at the root of your repo (or under your `destination-folder`), so already-synced projects are skipped on subsequent runs.
+
+Example workflow step:
+
+```yaml
+- name: Sync
+  uses: joshcai/leetcode-sync@v1.7
+  with:
+    github-token: ${{ github.token }}
+    leetcode-csrf-token: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+    leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+    sync-projects: true
+```
 
 ## Contributing
 
@@ -83,6 +112,14 @@ If you want to test changes to the action locally without having to commit and r
 `$ node index.js test`
 
 If you're using Replit, you can also just use the `Run` button, which is already configured to the above command.
+
+#### Building the bundled action (`dist/`)
+
+The action runs the bundled `dist/index.js`, which is generated from `src/` with [`@vercel/ncc`](https://github.com/vercel/ncc). To rebuild it locally:
+
+`$ npm ci && npm run package`
+
+If you'd rather not build locally, push your source change and let the `Build dist` GitHub Actions workflow rebuild the bundle on a clean runner. That workflow also fails if a committed `dist/` is out of date with `src/`, so the bundle stays in sync.
 
 #### Adding a new workflow parameter
 
